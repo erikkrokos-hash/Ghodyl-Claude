@@ -101,14 +101,18 @@ svg#dg{display:block;width:100%;height:auto;touch-action:manipulation;user-selec
 #dg .dimln{stroke:var(--muted);stroke-width:1;fill:none}
 #dg .dim-t{fill:var(--muted);font-family:var(--f-mono);font-size:10.5px;text-anchor:middle}
 #dg .far{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;opacity:.55}
-#dg .shell{fill:var(--body-fill);stroke:none}
+#dg{--car:var(--accent)}
+#dg .shell{fill:var(--car);fill-opacity:.12;stroke:none}
+#dg .grille{fill:var(--ink);fill-opacity:.7;stroke:none}
+#dg .badge{fill:var(--c-top);stroke:var(--ink);stroke-width:1}
+#dg .spoke{stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;fill:none}
 #dg .glass{fill:var(--glass);stroke:var(--muted);stroke-width:1;stroke-linejoin:round}
 #dg .edge{stroke:var(--muted);stroke-width:1;opacity:.75;fill:none}
-#dg .near{fill:var(--body-fill);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+#dg .near{fill:var(--car);fill-opacity:.2;stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
 #dg .seam{fill:none;stroke:var(--muted);stroke-width:1;stroke-linejoin:round}
 #dg .pillar{stroke:var(--muted);stroke-width:3.5;stroke-linecap:round;fill:none}
 #dg .handle{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;fill:none}
-#dg .shell,#dg .glass,#dg .edge,#dg .near,#dg .seam,#dg .pillar,#dg .far,#dg .handle,#dg .grid,#dg .dimln{pointer-events:none}
+#dg .shell,#dg .grille,#dg .badge,#dg .glass,#dg .edge,#dg .near,#dg .seam,#dg .pillar,#dg .far,#dg .handle,#dg .grid,#dg .dimln{pointer-events:none}
 #dg .f-top,#dg .f-front,#dg .f-side,#dg .tire,#dg .rim,#dg .lamp{stroke:var(--ink);stroke-width:1;stroke-linejoin:round}
 #dg .f-top{fill:var(--c-top)} #dg .f-front{fill:var(--c-front)} #dg .f-side{fill:var(--c-side)}
 #dg .tire{fill:var(--tire)} #dg .rim{fill:var(--c-front)} #dg .lamp{fill:var(--lamp)}
@@ -282,6 +286,13 @@ textarea{resize:vertical}
 .gplan small{color:var(--muted);grid-column:1;font-size:12.5px}
 .gplan .r{grid-row:1/3;grid-column:2;display:flex;gap:6px;align-items:center}
 .kv{display:grid;gap:10px}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.swatches span{position:relative}
+.swatches input[type=radio]{position:absolute;opacity:0;width:1px;height:1px}
+.swatches label{display:block;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);cursor:pointer;background:var(--sw)}
+.swatches input:checked + label{outline:2px solid var(--ink);outline-offset:2px}
+.swatches input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.swatches input[type=color]{width:40px;height:32px;padding:0 2px;border:1px solid var(--line);border-radius:5px;background:var(--paper);cursor:pointer}
 .lightbox img{display:block;max-width:100%;max-height:70vh;margin:0 auto;border-radius:4px}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:10px 16px;border-radius:6px;font-weight:500;z-index:50;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .loading{padding:14px 16px;border-top:1px solid var(--line);color:var(--muted);font-family:var(--f-mono);font-size:13px}
@@ -473,6 +484,7 @@ textarea{resize:vertical}
             <div class="field"><label for="s-plate">Rendszám</label><input type="text" id="s-plate" maxlength="12" autocomplete="off" placeholder="ABC-123"></div>
             <div class="field"><label for="s-vin">Alvázszám (VIN)</label><input type="text" id="s-vin" maxlength="17" autocomplete="off"></div>
           </div>
+          <fieldset class="field"><legend>Szín az ábrán</legend><div class="swatches" id="s-colors"></div></fieldset>
           <div class="field"><label for="s-note">Megjegyzés</label><input type="text" id="s-note" maxlength="200" placeholder="pl. szín, motorkód, gumiméret"></div>
           <div><button class="btn primary sm" type="submit">Autó adatainak mentése</button></div>
         </div>
@@ -876,12 +888,19 @@ function buildDiagram() {
   dimX(0, L, W + 760, 'hossz 3830');
   dimY(-380, 0, W, 'szélesség 1675');
 
-  // karosszéria profil (x, z)
-  const top = [[60,230],[10,420],[0,560],[30,690],[250,790],[950,985],[1640,1470],[1800,1515],[3350,1505],[3600,1440],[3780,1120],[3830,900],[3830,520],[3800,250]];
+  // karosszéria: a GD Jazz oldalprofilja (x, z), elölről a tetőn át hátra.
+  // Rövid lejtős orr, nagyon döntött szélvédő, magas tető, tetőspoiler, szinte függőleges csomagtérajtó.
+  const top = [[70,200],[20,300],[0,420],[5,540],[30,640],[90,730],[190,790],[500,880],[820,960],
+    [1560,1440],[1700,1500],[2200,1525],[3000,1515],[3500,1490],[3640,1475],[3700,1440],
+    [3790,1090],[3820,1000],[3830,800],[3835,560],[3830,400],[3800,250]];
+  const WS = 8, RG = 15;  // a szélvédő és a hátsó ablak szakasza a top tömbben
   const arch = xc => { const r = 350, a = []; for (let i = 0; i <= 16; i++) { const t = -0.17 + (Math.PI + 0.34) * i / 16; a.push([xc + r*Math.cos(t), 290 + r*Math.sin(t)]); } return a; };
   const profile = top.concat(arch(XR), arch(XF));
-  const side = y => profile.map(([x, z]) => [x, y, z]);
-  s += poly(side(0), 'far');
+  // befelé dőlő ablakvonal fölötti rész, lekerekített orr és far felülnézetben
+  const ins = (x, z) => (z > 1000 ? (z - 1000) / 525 * 150 : 0) + (x < 300 ? 130 * ((300 - x) / 300) ** 2 : 0) + (x > 3600 ? 70 * ((x - 3600) / 235) ** 2 : 0);
+  const nearY = (x, z) => W - ins(x, z), farY = (x, z) => ins(x, z);
+  const ny = (x, z, d = 0) => [x, nearY(x, z) - d, z];
+  s += poly(profile.map(([x, z]) => [x, farY(x, z), z]), 'far');
 
   // távoli kerekek, fékek, rugóstag
   s += cmp('kerek', cyl(XF, 290, 290, 60, 235, 'tire', 'tire') + cyl(XR, 290, 290, 60, 235, 'tire', 'tire'));
@@ -895,7 +914,7 @@ function buildDiagram() {
     pipe([[650,700,470],[860,720,300],[900,720,265]]) + box(900,1180,620,820,200,330) +
     pipe([[1180,720,265],[1350,330,230],[3300,330,230]]) + box(3300,3720,260,760,190,340) +
     pipe([[3720,450,250],[3920,450,250]]));
-  s += cmp('uzemanyag', box(1500,2150,450,1300,200,430) + pl([[2150,1150,380],[3330,W-40,960]], 'rod-thin'));
+  s += cmp('uzemanyag', box(1500,2150,450,1300,200,430) + pl([[2150,1150,380],[3350,W-20,950]], 'rod-thin'));
   s += cmp('futH',
     pl([[XR-60,300,320],[XR-60,W-300,320]], 'rod') +
     pl([[XR,300,290],[XR-520,330,360]], 'rod') + pl([[XR,W-300,290],[XR-520,W-330,360]], 'rod'));
@@ -917,19 +936,27 @@ function buildDiagram() {
     box(1750,2250,250,780,430,560) + box(2170,2290,250,780,560,1230) +
     box(1750,2250,895,1425,430,560) + box(2170,2290,895,1425,560,1230), ' soft');
   s += cmp('utaster', box(1000,1250,160,W-160,720,980) +
-    pl([[990,420,1015],[1290,860,1225]], 'rod-thin') + pl([[990,1060,1015],[1290,1500,1225]], 'rod-thin'));
+    pl([[850,420,985],[1150,860,1172]], 'rod-thin') + pl([[850,1060,985],[1150,1490,1172]], 'rod-thin'));
 
-  // felső héj (motorháztető, szélvédő, tető, hátsó ablak)
+  // felső héj (orr, motorháztető, szélvédő, tető, hátsó ablak, csomagtérajtó)
   for (let i = 0; i < top.length - 1; i++) {
     const [a, b] = [top[i], top[i+1]];
-    const cls = (i === 5 || i === 9) ? 'glass' : 'shell';
-    s += poly([[a[0],0,a[1]],[b[0],0,b[1]],[b[0],W,b[1]],[a[0],W,a[1]]], cls);
+    const cls = (i === WS || i === RG) ? 'glass' : 'shell';
+    s += poly([[a[0],farY(...a),a[1]],[b[0],farY(...b),b[1]],[b[0],nearY(...b),b[1]],[a[0],nearY(...a),a[1]]], cls);
   }
-  [2,3,4,5,6,7,8,9,10,11].forEach(i => { const [x, z] = top[i]; s += pl([[x,0,z],[x,W,z]], 'edge'); });
+  [4,6,8,9,14,15,16,19].forEach(i => { const [x, z] = top[i]; s += pl([[x,farY(x,z),z],[x,nearY(x,z),z]], 'edge'); });
 
-  // lámpák
-  const hl = [[30,W-80,690],[250,W-80,790],[250,W-450,790],[30,W-450,690]];
-  const rl = [[3830,W-10,880],[3790,W-10,1100],[3700,W-10,1290],[3700,W-160,1290],[3790,W-230,1100],[3830,W-230,880]];
+  // orr: keskeny hűtőrács H-emblémával, alsó légbeömlő
+  s += pl([[70,380,705],[115,380,750],[115,W-380,750],[70,W-380,705]].concat([[70,380,705]]), 'seam');
+  s += poly([[70,380,705],[115,380,750],[115,W-380,750],[70,W-380,705]], 'grille');
+  s += poly(Array.from({length:20}, (_, i) => { const t = i / 20 * Math.PI * 2; return [93, W/2 + 48*Math.cos(t), 728 + 26*Math.sin(t)]; }), 'badge');
+  s += poly([[10,460,440],[10,W-460,440],[4,W-460,350],[4,460,350]], 'grille');
+
+  // lámpák: hátrahúzott első fényszórók, a D-oszlop mentén felfutó magas hátsó lámpák
+  const hl = [[45,W-97,660],[150,W-45,765],[430,W-12,858],[380,W-140,848],[170,W-330,785],[55,W-370,695]];
+  const lampPath = [[3831,800],[3821,1000],[3749,1250],[3705,1420]];
+  const rl = lampPath.map(([x, z]) => [x, nearY(x, z) - 6, z]).concat(lampPath.slice().reverse().map(([x, z]) => [x, nearY(x, z) - 175, z]));
+  const rlSide = [[3831,800],[3821,1000],[3749,1250],[3705,1420],[3668,1420],[3712,1250],[3788,1000],[3798,800]].map(([x, z]) => ny(x, z));
   s += cmp('elektromos', poly(mirrorY(hl), 'lamp') + poly(mirrorY(rl), 'lamp') + poly(hl, 'lamp') + poly(rl, 'lamp'));
 
   // közeli oldal: fékek, futómű, kerekek
@@ -937,18 +964,23 @@ function buildDiagram() {
   s += cmp('fekH', cyl(XR, 290, 125, W-310, W-250));
   s += cmp('futE', pl([[XF+20,W-330,330],[XF+70,W-360,930]], 'rod') + spring(XF+50, W-345, 600, 880));
   s += cmp('futH', pl([[XR+80,W-330,300],[XR+110,W-350,760]], 'rod') + spring(XR-200, W-360, 330, 720));
-  const wheel = x => cyl(x, 290, 290, W-235, W-60, 'tire', 'tire') + poly(ring(x, W-60, 290, 180), 'rim') + poly(ring(x, W-60, 290, 55, 16), 'f-front');
+  const wheel = x => cyl(x, 290, 290, W-235, W-60, 'tire', 'tire') + poly(ring(x, W-60, 290, 180), 'rim') +
+    Array.from({length:5}, (_, i) => { const t = i / 5 * Math.PI * 2 + 0.3; return pl([[x + 62*Math.cos(t), W-60, 290 + 62*Math.sin(t)], [x + 165*Math.cos(t), W-60, 290 + 165*Math.sin(t)]], 'spoke'); }).join('') +
+    poly(ring(x, W-60, 290, 55, 16), 'f-front');
   s += cmp('kerek', wheel(XF) + wheel(XR));
 
-  // közeli karosszériaoldal
-  s += poly(side(W), 'near');
-  s += poly([[1060,W,1010],[1600,W,1420],[3380,W,1440],[3560,W,1060]], 'glass');
-  s += pl([[2235,W,1012],[2255,W,1430]], 'pillar') + pl([[3020,W,1018],[3040,W,1440]], 'seam');
-  s += pl([[1130,W,995],[1130,W,330],[2890,W,330],[2900,W,560],[3010,W,720],[3020,W,1018]], 'seam');
-  s += pl([[2240,W,1012],[2240,W,330]], 'seam');
-  s += pl([[2060,W,860],[2160,W,860]], 'handle') + pl([[2780,W,860],[2880,W,860]], 'handle');
-  s += cmp('karosszeria', box(1150,1300,W,W+130,960,1080) + pl([[1130,W,300],[2890,W,300]], 'rod-thin'));
-  s += cmp('uzemanyag', poly(ring(3330, W, 960, 60, 24), 'f-front'));
+  // közeli karosszériaoldal: emelkedő ablakvonal, kis háromszögablak az A-oszlopnál, hátsó oldalablak
+  s += poly(profile.map(([x, z]) => ny(x, z)), 'near');
+  s += poly([[930,1005],[1540,1400],[1720,1460],[2200,1470],[3000,1460],[3480,1440],[3600,1100],[3060,1075],[2200,1045],[1185,1015]].map(p => ny(...p)), 'glass');
+  s += pl([ny(1185,1015), ny(1190,1170)], 'pillar') + pl([ny(2195,1045), ny(2215,1468)], 'pillar') + pl([ny(3060,1075), ny(3080,1458)], 'pillar');
+  s += pl([[1185,1015],[1175,330],[2870,330],[2950,520],[3040,760],[3060,1075]].map(p => ny(...p)), 'seam');
+  s += pl([ny(2200,1045), ny(2200,330)], 'seam');
+  s += pl([ny(400,610), ny(470,700), ny(820,960)], 'seam') + pl([ny(3560,560), ny(3835,560)], 'seam');
+  s += pl([ny(1980,870), ny(2080,875)], 'handle') + pl([ny(2820,880), ny(2920,885)], 'handle');
+  s += poly(rlSide, 'lamp');
+  s += cmp('karosszeria', box(1190,1330,W,W+140,1010,1120) + pl([ny(1105,300), ny(2865,300)], 'rod-thin'));
+  s += cmp('uzemanyag', poly(Array.from({length:4}, (_, i) => [[3290,900],[3410,900],[3410,1000],[3290,1000]][i]).map(p => ny(...p)), 'f-front'));
+  s += cmp('utaster', pl([[3750, W/2 - 40, 1250],[3712, W/2 + 330, 1390]], 'rod-thin'));
 
   // hívójelek: körbe rendezve, rajzi kivezető vonallal
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
@@ -1001,6 +1033,7 @@ function hilite(gid, on) {
 
 /* ---------- Megjelenítés ---------- */
 function renderHeader() {
+  if (!$('#dlg-settings').open) applyCarColor(S.settings.color || '');
   $('#odo').textContent = fmtKm(S.settings.km);
   const p = (S.settings.plate || '').trim();
   $('#plate').innerHTML = p ? `<span class="plate" aria-label="Rendszám"><b>H</b><span>${esc(p.toUpperCase())}</span></span>` : '';
@@ -1306,11 +1339,32 @@ $('#f-km').addEventListener('submit', async ev => {
 });
 $('#f-settings').addEventListener('submit', async ev => {
   ev.preventDefault();
-  try { await store.saveSettings({...S.settings, plate: $('#s-plate').value.trim(), vin: $('#s-vin').value.trim().toUpperCase(), note: $('#s-note').value.trim()}); toast('Autó adatai mentve.'); }
+  try { await store.saveSettings({...S.settings, plate: $('#s-plate').value.trim(), vin: $('#s-vin').value.trim().toUpperCase(), note: $('#s-note').value.trim(), color: pickedColor()}); toast('Autó adatai mentve.'); }
   catch (e) { toast(errMsg(e)); }
 });
+const COLORS = [['', 'Alap (vázlat)'], ['#b9bec4', 'Ezüst'], ['#6f757c', 'Grafitszürke'], ['#2a2d31', 'Fekete'], ['#f4f4f2', 'Fehér'],
+  ['#b8282b', 'Piros'], ['#26365e', 'Sötétkék'], ['#5f8fc4', 'Világoskék'], ['#4f6b45', 'Zöld'], ['#d9b440', 'Sárga']];
+function drawSwatches(cur) {
+  const known = COLORS.some(c => c[0] === cur);
+  $('#s-colors').innerHTML = COLORS.map(([v, n], i) => `<span><input type="radio" name="carcolor" id="sc-${i}" value="${v}"${v === cur ? ' checked' : ''}><label for="sc-${i}" title="${n}" aria-label="${n}" style="--sw:${v || 'repeating-linear-gradient(45deg,var(--accent-soft) 0 4px,var(--sheet) 4px 8px)'}"></label></span>`).join('') +
+    `<label class="vh" for="sc-custom">Egyedi szín</label><input type="color" id="sc-custom" value="${known || !cur ? '#8a8f96' : cur}" title="Egyedi szín">` +
+    `<span><input type="radio" name="carcolor" id="sc-c" value="custom"${!known && cur ? ' checked' : ''}><label for="sc-c" title="Egyedi" aria-label="Egyedi szín használata" style="--sw:conic-gradient(#b8282b,#d9b440,#4f6b45,#5f8fc4,#26365e,#b8282b)"></label></span>`;
+}
+function pickedColor() {
+  const r = $('input[name=carcolor]:checked'); if (!r) return S.settings.color || '';
+  return r.value === 'custom' ? $('#sc-custom').value : r.value;
+}
+function applyCarColor(c) { const svg = $('#dg'); if (c) svg.style.setProperty('--car', c); else svg.style.removeProperty('--car'); }
+$('#s-colors').addEventListener('change', ev => {
+  if (ev.target.id === 'sc-custom') $('#sc-c').checked = true;
+  const c = pickedColor(); applyCarColor(c);
+  if (store) store.saveSettings({...S.settings, color: c}).catch(e => toast(errMsg(e)));
+});
+$('#s-colors').addEventListener('input', ev => { if (ev.target.id === 'sc-custom') { $('#sc-c').checked = true; applyCarColor(pickedColor()); } });
+$('#dlg-settings').addEventListener('close', () => applyCarColor(S.settings.color || ''));
 function openSettings() {
   $('#s-plate').value = S.settings.plate || ''; $('#s-vin').value = S.settings.vin || ''; $('#s-note').value = S.settings.note || '';
+  drawSwatches(S.settings.color || '');
   $('#s-mode').textContent = {
     cloud: 'Az adatok és a csatolmányok ennek a Claude-oldalnak a saját adatbázisában vannak. Minden eszközről elérheted, ahol be vagy jelentkezve.',
     local: 'Az adatok csak ebben a böngészőben, ezen az eszközön vannak. Készíts időnként mentést fájlba, mert a böngészőadatok törlésével elvesznek.',
