@@ -60,7 +60,7 @@ header.top h1{font:650 34px/1.05 var(--f-ui);letter-spacing:-.03em;margin:6px 0 
 nav.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:5;display:flex;gap:2px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none;padding:4px;background:var(--sunk);border-radius:999px;box-shadow:0 0 0 8px var(--bg)}
 .tab-btn{font:500 14.5px/1 var(--f-ui);padding:10px 16px;border:0;border-radius:999px;background:none;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px}
 .tab-btn:hover{color:var(--ink)}
-@media (max-width:420px){.tab-btn{padding:9px 11px;font-size:14px}}
+@media (max-width:440px){nav.tabs{width:100%;justify-content:space-between}.tab-btn{padding:9px 8px;font-size:13px;gap:4px}.tab-btn .cnt{font-size:10px;padding:2px 5px}}
 .tab-btn[aria-selected="true"]{background:var(--sheet);color:var(--ink);box-shadow:var(--shadow)}
 .tab-btn .cnt{font:600 11px/1 var(--f-num);background:var(--bad);color:var(--on-status);border-radius:999px;padding:3px 7px}
 main{padding-block:22px 64px}
@@ -71,14 +71,12 @@ h2.sec{font:600 18px/1.2 var(--f-ui);letter-spacing:-.015em;margin:0}
 /* kártyák */
 .sheet{background:var(--sheet);border-radius:var(--r-lg);box-shadow:var(--shadow)}
 .sheet > .sec-h{padding:18px 20px 8px}
-.auto-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:20px;align-items:start}
+.auto-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
 @media (max-width:880px){.auto-grid{grid-template-columns:minmax(0,1fr)}}
-@media (min-width:881px){.dg-wrap{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}}
-.side{display:grid;gap:20px;min-width:0}
 
 /* ábra */
-.dg-wrap{margin:0;padding:14px 14px 0;overflow:hidden}
-svg#dg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.dg-wrap{margin:0 0 22px;padding:10px 14px 0;overflow:hidden}
+svg#dg{display:block;width:100%;height:auto;max-height:calc(100vh - 230px);min-height:260px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 #dg *{vector-effect:non-scaling-stroke}
 #dg{--car:var(--car-default)}
 #dg .art path{stroke:none;pointer-events:none}
@@ -282,8 +280,18 @@ textarea{resize:vertical}
     </div>
   </header>
 
+  <figure class="sheet dg-wrap">
+    <svg id="dg" role="group" aria-label="A Honda Jazz rajza számozott alkatrészcsoportokkal"></svg>
+    <figcaption class="dg-foot">
+      <div class="legend" aria-label="Jelmagyarázat">
+        <span class="ok"><i></i>Rendben</span><span class="warn"><i></i>Hamarosan / tervezett</span><span class="bad"><i></i>Lejárt</span><span><i></i>Nincs adat</span>
+      </div>
+      <div class="titleblock">1. ábra · Honda Jazz GD · fotó alapján</div>
+    </figcaption>
+  </figure>
+
   <nav class="tabs" role="tablist" aria-label="Nézetek">
-    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="auto" aria-selected="true">Autó</button>
+    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="auto" aria-selected="true">Áttekintés</button>
     <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="naplo" aria-selected="false">Napló</button>
     <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="papirok" aria-selected="false">Papírok <span class="cnt" id="cnt-docs" hidden></span></button>
     <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="terv" aria-selected="false">Szervizterv <span class="cnt" id="cnt-plan" hidden></span></button>
@@ -292,16 +300,6 @@ textarea{resize:vertical}
   <main>
     <section class="tab" id="tab-auto">
       <div class="auto-grid">
-        <figure class="sheet dg-wrap">
-          <svg id="dg" role="group" aria-label="A Honda Jazz rajza számozott alkatrészcsoportokkal"></svg>
-          <figcaption class="dg-foot">
-            <div class="legend" aria-label="Jelmagyarázat">
-              <span class="ok"><i></i>Rendben</span><span class="warn"><i></i>Hamarosan / tervezett</span><span class="bad"><i></i>Lejárt</span><span><i></i>Nincs adat</span>
-            </div>
-            <div class="titleblock">1. ábra · Honda Jazz GD · fotó alapján</div>
-          </figcaption>
-        </figure>
-        <div class="side">
           <section class="sheet" aria-labelledby="h-todo">
             <div class="sec-h"><h2 class="sec" id="h-todo">Teendők</h2><span class="mode" id="mode"><i></i><span>Betöltés…</span></span></div>
             <div class="todo-list" id="todo"><div class="loading">Adatok betöltése…</div></div>
@@ -310,7 +308,6 @@ textarea{resize:vertical}
             <div class="sec-h"><h2 class="sec" id="h-groups">Alkatrészcsoportok</h2><span class="hint">Koppints egy sorra vagy számra</span></div>
             <ol class="groups" id="groups"></ol>
           </section>
-        </div>
       </div>
     </section>
 
@@ -809,7 +806,7 @@ function buildDiagram() {
   });
   // hívójelek körben, kivezető vonallal a horgonypontig
   const bx0 = 150, bx1 = 1630, by0 = 210, by1 = 1215;
-  const cx = (bx0 + bx1) / 2, cy = (by0 + by1) / 2 + 20, rx = (bx1 - bx0) / 2 + 230, ry = (by1 - by0) / 2 + 200;
+  const cx = (bx0 + bx1) / 2, cy = (by0 + by1) / 2 + 20, rx = (bx1 - bx0) / 2 + 150, ry = (by1 - by0) / 2 + 130;
   const items = GROUPS.map(g => ({g, a:g.anchor, t: Math.atan2((g.anchor[1] - cy) / ry, (g.anchor[0] - cx) / rx)})).sort((p, q) => p.t - q.t);
   const n = items.length, minSep = 2 * Math.PI / n * 0.9;
   for (let it = 0; it < 400; it++) {
@@ -828,7 +825,7 @@ function buildDiagram() {
       `<g class="px mbtn" data-x="${f(m[0])}" data-y="${f(m[1])}" role="button" tabindex="0" aria-label="${esc(g.n + '. ' + g.name)}">` +
       `<circle class="mc" r="14"/><text class="mt">${g.n}</text></g></g>`;
   });
-  const mg = 120;
+  const mg = 90;
   Object.assign(VB, {x: x0 - mg, y: y0 - mg, w: (x1 - x0) + 2*mg, h: (y1 - y0) + 2*mg});
   const svg = $('#dg');
   svg.setAttribute('viewBox', `${f(VB.x)} ${f(VB.y)} ${f(VB.w)} ${f(VB.h)}`);
