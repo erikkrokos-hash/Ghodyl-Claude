@@ -14,7 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: két oszlop — balra az autó rajza egy nagy, puha kártyán, jobbra a teendők és a csoportok; mobilon egymás alatt, a párbeszédek alulról nyíló lapok. */
+/* Mindig világos téma, a felhasználó kérésére.
+   Layout: két oszlop — balra az autó rajza egy nagy, puha kártyán, jobbra a teendők és a csoportok; mobilon egymás alatt, a párbeszédek alulról nyíló lapok. */
 :root{
   --bg:#ECE9E3; --sheet:#F8F6F2; --sunk:#E2DED5; --ink:#24231F; --muted:#6C685E; --line:#DAD5CB;
   --accent:#8A5B36; --accent-soft:#EFE3D6; --primary:#2B2925; --primary-ink:#F8F6F2;
@@ -25,26 +26,7 @@
   --f-ui:"Geist",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-num:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --r-lg:20px; --r:14px; --r-sm:10px;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#161512; --sheet:#201F1B; --sunk:#2B2924; --ink:#ECE8DF; --muted:#A49F93; --line:#37342E;
-    --accent:#D3A47C; --accent-soft:#3A2D22; --primary:#ECE8DF; --primary-ink:#1A1916;
-    --ok:#9DBA7C; --warn:#DDAA52; --bad:#E08063; --none:#7F7A70; --on-status:#171612;
-    --ok-soft:#27311D; --warn-soft:#3A2E17; --bad-soft:#3D231B; --none-soft:#2C2A25;
-    --car-default:#8E887C; --tr-dark:#0B0A08; --tr-mid:rgba(0,0,0,.32);
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 32px -20px rgba(0,0,0,.7);
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#161512; --sheet:#201F1B; --sunk:#2B2924; --ink:#ECE8DF; --muted:#A49F93; --line:#37342E;
-  --accent:#D3A47C; --accent-soft:#3A2D22; --primary:#ECE8DF; --primary-ink:#1A1916;
-  --ok:#9DBA7C; --warn:#DDAA52; --bad:#E08063; --none:#7F7A70; --on-status:#171612;
-  --ok-soft:#27311D; --warn-soft:#3A2E17; --bad-soft:#3D231B; --none-soft:#2C2A25;
-  --car-default:#8E887C; --tr-dark:#0B0A08; --tr-mid:rgba(0,0,0,.32);
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 32px -20px rgba(0,0,0,.7);
-  color-scheme:dark;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
