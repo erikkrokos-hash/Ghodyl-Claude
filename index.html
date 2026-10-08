@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#17202a">
+</head>
+<body>
+<!-- APP START -->
+<title>Jazz Szervizkönyv</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: műszaki rajzlap — bal oldalt az axonometrikus ábra számozott hívójelekkel, jobb oldalt a teendők és a csoportlista; keskeny kijelzőn egymás alatt. */
+:root{
+  --paper:#eef1f3; --sheet:#fbfcfc; --ink:#17202a; --muted:#5a6672; --line:#c6ced6; --grid:#dfe4e9;
+  --accent:#2250a6; --accent-soft:#dde6f6; --accent-ink:#ffffff;
+  --ok:#2c7a4b; --warn:#9a5d00; --bad:#bf3a2b; --none:#8b96a1; --on-status:#ffffff;
+  --ok-soft:#e0efe5; --warn-soft:#f6e9d3; --bad-soft:#f6e0dc; --none-soft:#e7ebef;
+  --c-top:#ffffff; --c-front:#e3e8ed; --c-side:#d2d9e1; --tire:#3a4652; --lamp:#f3e3b5;
+  --body-fill:rgba(34,80,166,.045); --glass:rgba(34,80,166,.12);
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f141a; --sheet:#161d25; --ink:#e3e8ed; --muted:#97a3af; --line:#33404e; --grid:#202a35;
+    --accent:#86a8ff; --accent-soft:#1f2c47; --accent-ink:#0f141a;
+    --ok:#5cc28a; --warn:#e3a43a; --bad:#ff7a66; --none:#7d8894; --on-status:#0f141a;
+    --ok-soft:#163226; --warn-soft:#3a2c12; --bad-soft:#3d1c18; --none-soft:#232c36;
+    --c-top:#2b3644; --c-front:#222c38; --c-side:#1c252f; --tire:#0b0f14; --lamp:#5a4e2a;
+    --body-fill:rgba(134,168,255,.05); --glass:rgba(134,168,255,.12);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f141a; --sheet:#161d25; --ink:#e3e8ed; --muted:#97a3af; --line:#33404e; --grid:#202a35;
+  --accent:#86a8ff; --accent-soft:#1f2c47; --accent-ink:#0f141a;
+  --ok:#5cc28a; --warn:#e3a43a; --bad:#ff7a66; --none:#7d8894; --on-status:#0f141a;
+  --ok-soft:#163226; --warn-soft:#3a2c12; --bad-soft:#3d1c18; --none-soft:#232c36;
+  --c-top:#2b3644; --c-front:#222c38; --c-side:#1c252f; --tire:#0b0f14; --lamp:#5a4e2a;
+  --body-fill:rgba(134,168,255,.05); --glass:rgba(134,168,255,.12);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--paper);color:var(--ink)}
+body{margin:0;font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{text-wrap:balance}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.eyebrow{font:500 11.5px/1.3 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.hint{color:var(--muted);font-size:13.5px;margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* fejléc */
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;padding-block:18px 14px}
+header.top h1{font:700 32px/1 var(--f-display);text-transform:uppercase;letter-spacing:.015em;margin:5px 0 0}
+.top-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.plate{display:inline-flex;align-items:stretch;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;font:600 15px/1 var(--f-mono);letter-spacing:.04em;background:var(--c-top);color:var(--ink)}
+.plate b{background:#1f4aa8;color:#fff;font:600 10px/1 var(--f-mono);display:grid;place-items:center;padding:0 4px}
+.plate span{padding:6px 8px}
+.odo{display:flex;flex-direction:column;align-items:flex-end;gap:2px;border:1px solid var(--line);background:var(--sheet);border-radius:var(--r);padding:6px 10px;cursor:pointer;text-align:right}
+.odo .v{font:600 17px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.odo .l{font:500 10.5px/1 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);background:var(--sheet);border-radius:var(--r);cursor:pointer}
+.icon-btn svg{width:20px;height:20px}
+.mode{font:500 11px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.mode i{width:7px;height:7px;border-radius:50%;background:var(--none);display:inline-block}
+.mode.cloud i{background:var(--ok)} .mode.local i{background:var(--warn)} .mode.memory i{background:var(--bad)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line);display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab-btn{font:600 15px/1 var(--f-display);text-transform:uppercase;letter-spacing:.07em;padding:13px 14px 11px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.tab-btn[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab-btn .cnt{font:600 11px/1 var(--f-mono);background:var(--bad);color:var(--on-status);border-radius:9px;padding:3px 6px}
+main{padding-block:18px 56px}
+section.tab{display:grid;gap:18px}
+h2.sec{font:700 18px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.06em;margin:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* panelek */
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r)}
+.pad{padding:16px}
+.auto-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:880px){.auto-grid{grid-template-columns:minmax(0,1fr)}}
+@media (min-width:881px){.dg-wrap{position:sticky;top:calc(env(safe-area-inset-top,0px) + 60px)}}
+.side{display:grid;gap:18px;min-width:0}
+
+/* ábra */
+.dg-wrap{margin:0;padding:10px 10px 0;position:relative;overflow:hidden}
+svg#dg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#dg *{vector-effect:non-scaling-stroke}
+#dg .grid{stroke:var(--grid);stroke-width:1;fill:none}
+#dg .dimln{stroke:var(--muted);stroke-width:1;fill:none}
+#dg .dim-t{fill:var(--muted);font-family:var(--f-mono);font-size:10.5px;text-anchor:middle}
+#dg .far{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;opacity:.55}
+#dg .shell{fill:var(--body-fill);stroke:none}
+#dg .glass{fill:var(--glass);stroke:var(--muted);stroke-width:1;stroke-linejoin:round}
+#dg .edge{stroke:var(--muted);stroke-width:1;opacity:.75;fill:none}
+#dg .near{fill:var(--body-fill);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round}
+#dg .seam{fill:none;stroke:var(--muted);stroke-width:1;stroke-linejoin:round}
+#dg .pillar{stroke:var(--muted);stroke-width:3.5;stroke-linecap:round;fill:none}
+#dg .handle{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;fill:none}
+#dg .shell,#dg .glass,#dg .edge,#dg .near,#dg .seam,#dg .pillar,#dg .far,#dg .handle,#dg .grid,#dg .dimln{pointer-events:none}
+#dg .f-top,#dg .f-front,#dg .f-side,#dg .tire,#dg .rim,#dg .lamp{stroke:var(--ink);stroke-width:1;stroke-linejoin:round}
+#dg .f-top{fill:var(--c-top)} #dg .f-front{fill:var(--c-front)} #dg .f-side{fill:var(--c-side)}
+#dg .tire{fill:var(--tire)} #dg .rim{fill:var(--c-front)} #dg .lamp{fill:var(--lamp)}
+#dg .rod{stroke:var(--ink);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+#dg .rod-thin{stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;fill:none}
+#dg .spring{stroke:var(--ink);stroke-width:1.3;fill:none;stroke-linejoin:round}
+#dg .pipe-o{stroke:var(--ink);stroke-width:5.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#dg .pipe-i{stroke:var(--c-top);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#dg .soft .f-top,#dg .soft .f-front,#dg .soft .f-side{stroke:var(--muted);opacity:.75}
+#dg .cmp{cursor:pointer}
+#dg .cmp.hl .f-top,#dg .cmp.hl .f-front,#dg .cmp.hl .f-side,#dg .cmp.hl .rim,#dg .cmp.hl .lamp,
+#dg .cmp.on .f-top,#dg .cmp.on .f-front,#dg .cmp.on .f-side,#dg .cmp.on .rim,#dg .cmp.on .lamp{fill:var(--accent-soft);stroke:var(--accent);opacity:1}
+#dg .cmp.on .tire,#dg .cmp.hl .tire{stroke:var(--accent);stroke-width:2}
+#dg .cmp.on .rod,#dg .cmp.on .rod-thin,#dg .cmp.on .spring,#dg .cmp.on .pipe-o,
+#dg .cmp.hl .rod,#dg .cmp.hl .rod-thin,#dg .cmp.hl .spring,#dg .cmp.hl .pipe-o{stroke:var(--accent)}
+#dg .ld{stroke:var(--muted);stroke-width:1;fill:none;pointer-events:none}
+#dg .adot{fill:var(--ink);pointer-events:none}
+#dg .mbtn{cursor:pointer;outline:none}
+#dg .mc{fill:var(--none);stroke:var(--sheet);stroke-width:2.5}
+#dg .mt{fill:var(--on-status);font:600 12px var(--f-mono);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+#dg .mk.st-ok .mc{fill:var(--ok)} #dg .mk.st-warn .mc{fill:var(--warn)} #dg .mk.st-bad .mc{fill:var(--bad)}
+#dg .mk.on .mc,#dg .mk.hl .mc,#dg .mbtn:focus-visible .mc{stroke:var(--accent);stroke-width:3.5}
+#dg .mk.on .ld,#dg .mk.hl .ld{stroke:var(--accent);stroke-width:1.6}
+.dg-foot{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;flex-wrap:wrap;border-top:1px solid var(--line);margin:0 -10px;padding:9px 12px}
+.legend{display:flex;gap:6px 12px;flex-wrap:wrap;font:500 11.5px/1 var(--f-mono);color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--none)}
+.legend .ok i{background:var(--ok)} .legend .warn i{background:var(--warn)} .legend .bad i{background:var(--bad)}
+.titleblock{font:500 10.5px/1.35 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:right}
+
+/* állapot */
+.chip{display:inline-flex;align-items:center;gap:4px;font:600 10.5px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:4px 7px;border-radius:3px;white-space:nowrap;background:var(--none-soft);color:var(--muted)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.plan{background:var(--accent-soft);color:var(--accent)}
+.chip.sample{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.num{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 12px/1 var(--f-mono);background:var(--none);color:var(--on-status)}
+.num.ok{background:var(--ok)} .num.warn{background:var(--warn)} .num.bad{background:var(--bad)}
+
+/* teendők */
+.todo-list{display:grid;gap:0}
+.todo-it{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:start;text-align:left;padding:11px 16px;border:0;border-top:1px solid var(--line);background:none;cursor:pointer;width:100%}
+.todo-it:hover{background:var(--paper)}
+.todo-it .t{font-weight:600}
+.todo-it .s{grid-column:2;color:var(--muted);font-size:13.5px}
+.empty{padding:14px 16px;border-top:1px solid var(--line);color:var(--muted)}
+.sheet > .sec-h{padding:14px 16px 12px}
+
+/* csoportlista */
+ol.groups{list-style:none;margin:0;padding:0}
+.grp{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;width:100%;text-align:left;padding:9px 16px;border:0;border-top:1px solid var(--line);background:none;cursor:pointer}
+.grp:hover,.grp.hl{background:var(--paper)}
+.grp .n{font-weight:600}
+.grp .s{grid-column:2;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp .chip{grid-row:1/3;grid-column:3}
+
+/* gombok */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:600 14px/1.1 var(--f-body);padding:9px 14px;border-radius:5px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:var(--on-status)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.btn svg{width:16px;height:16px}
+.sp{flex:1}
+
+/* bejegyzések */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.toolbar .field{min-width:150px;flex:1 1 150px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0}
+.stat{padding:12px 16px;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0}
+.stat .v{font:600 22px/1.1 var(--f-mono);font-variant-numeric:tabular-nums;margin-top:4px}
+.year{font:700 15px/1 var(--f-display);letter-spacing:.08em;color:var(--muted);margin:6px 0 -6px;display:flex;align-items:center;gap:10px}
+.year::after{content:"";flex:1;border-top:1px solid var(--line)}
+.entries{display:grid;gap:10px}
+.entry{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:4px 14px;padding:12px 14px;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r)}
+.entry.tervezett{border-style:dashed}
+.entry .meta{display:grid;gap:3px;align-content:start;font:500 12.5px/1.2 var(--f-mono);font-variant-numeric:tabular-nums}
+.entry .meta .km{color:var(--muted)}
+.entry .main{min-width:0;display:grid;gap:5px;align-content:start}
+.entry .ttl{font-weight:600;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.entry .sub{color:var(--muted);font-size:13.5px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.entry .desc{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.entry .end{display:grid;gap:8px;justify-items:end;align-content:start}
+.entry .cost{font:600 14px/1 var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:560px){
+  .entry{grid-template-columns:minmax(0,1fr) auto}
+  .entry .meta{grid-column:1;display:flex;gap:10px}
+  .entry .main{grid-column:1/3}
+  .entry .end{grid-column:2;grid-row:1}
+}
+.kind{font:600 10.5px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);border-radius:3px;padding:3px 5px;color:var(--muted)}
+.kind.csere{border-color:var(--accent);color:var(--accent)}
+.kind.javitas{border-color:var(--warn);color:var(--warn)}
+.gchip{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;font-size:13.5px;text-align:left}
+.gchip:hover{text-decoration:underline}
+
+/* fájlok */
+.files{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;width:64px;height:64px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--paper);display:grid;place-items:center;cursor:pointer;padding:0;color:var(--ink);text-decoration:none}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .ft{font:600 11px/1 var(--f-mono);letter-spacing:.05em}
+.thumb .fn{position:absolute;inset:auto 0 0 0;font:500 9px/1.2 var(--f-mono);background:var(--sheet);padding:2px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.thumb .rm{position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:var(--sheet);font:600 14px/1 var(--f-body);cursor:pointer;display:grid;place-items:center}
+
+/* papírok */
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.doc{display:grid;gap:8px;align-content:start;padding:14px;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);border-top:4px solid var(--none)}
+.doc.ok{border-top-color:var(--ok)} .doc.warn{border-top-color:var(--warn)} .doc.bad{border-top-color:var(--bad)}
+.doc h3{font:600 17px/1.2 var(--f-body);margin:0}
+.doc .valid{font:500 13px/1.3 var(--f-mono);font-variant-numeric:tabular-nums}
+.doc .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.doc.add{border:1.5px dashed var(--line);background:transparent;cursor:pointer;text-align:left;color:var(--muted);place-content:center;min-height:120px}
+.doc.add:hover{border-color:var(--accent);color:var(--accent)}
+.doc.add b{font:600 16px/1.2 var(--f-body);color:var(--ink)}
+
+/* szervizterv */
+.plan{display:grid}
+.prow{display:grid;grid-template-columns:minmax(0,1.7fr) 170px minmax(0,1.1fr) minmax(0,1.4fr) auto;gap:8px 14px;align-items:center;padding:11px 16px;border-top:1px solid var(--line)}
+.prow.head{font:500 10.5px/1 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-top:0;padding-block:10px}
+.prow .nm{display:flex;gap:10px;align-items:center;min-width:0}
+.prow .nm b{font-weight:600;display:block}
+.prow .nm small{color:var(--muted);font-size:12.5px}
+.prow .iv{display:flex;gap:6px}
+.prow .iv label{display:grid;gap:2px;font:500 10px/1 var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.prow .iv input{width:78px;padding:6px 7px;font:500 13px var(--f-mono)}
+.prow .lst,.prow .due{font:500 13px/1.35 var(--f-mono);font-variant-numeric:tabular-nums}
+.prow .due small{display:block;color:var(--muted);font-size:12px}
+.prow .act{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.prow .lbl{display:none}
+@media (max-width:820px){
+  .prow.head{display:none}
+  .prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px}
+  .prow .nm{grid-column:1/3}
+  .prow .act{grid-column:1/3;justify-content:space-between}
+  .prow .lbl{display:block;font:500 10px/1.2 var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+  .prow .iv{grid-column:1/3}
+}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 var(--r) var(--r) 0;margin:0;max-width:75ch}
+
+/* párbeszédablakok */
+dialog{border:1px solid var(--line);border-radius:10px;padding:0;background:var(--sheet);color:var(--ink);width:min(640px,calc(100% - 20px));max-height:calc(100% - 20px);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(8,12,18,.5)}
+dialog form{margin:0}
+.dlg-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--sheet);z-index:2}
+.dlg-h h2{font:700 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:3px 0 0}
+.x{width:36px;height:36px;flex:none;border:1px solid var(--line);border-radius:50%;background:var(--sheet);cursor:pointer;font:400 22px/1 var(--f-body);display:grid;place-items:center}
+.dlg-b{padding:16px;display:grid;gap:16px}
+.dlg-b h3{font:700 14px/1 var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px}
+.dlg-f{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--sheet);z-index:2}
+.field{display:grid;gap:5px;min-width:0;border:0;padding:0;margin:0}
+.field > label,.field > legend,.field > .lbl{font:500 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:0}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:var(--ink)}
+input[type=number],input[type=date]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+textarea{resize:vertical}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg span{position:relative}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg label{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:20px;cursor:pointer;font-size:14px;background:var(--sheet)}
+.seg input:checked + label{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.err{color:var(--bad);margin:0;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:6px 11px;font-size:13.5px;cursor:pointer}
+.pchip:hover{border-color:var(--accent);color:var(--accent)}
+.gplan{display:grid;border:1px solid var(--line);border-radius:var(--r)}
+.gplan > div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:9px 12px;border-top:1px solid var(--line)}
+.gplan > div:first-child{border-top:0}
+.gplan small{color:var(--muted);grid-column:1;font-size:12.5px}
+.gplan .r{grid-row:1/3;grid-column:2;display:flex;gap:6px;align-items:center}
+.kv{display:grid;gap:10px}
+.lightbox img{display:block;max-width:100%;max-height:70vh;margin:0 auto;border-radius:4px}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:10px 16px;border-radius:6px;font-weight:500;z-index:50;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.loading{padding:14px 16px;border-top:1px solid var(--line);color:var(--muted);font-family:var(--f-mono);font-size:13px}
+@media (prefers-reduced-motion:no-preference){
+  .grp,.todo-it,.btn{transition:background-color .12s,border-color .12s}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Honda Jazz · GD1 · 1.2 i-DSI · 2004</div>
+      <h1>Jazz Szervizkönyv</h1>
+    </div>
+    <div class="top-r">
+      <span id="plate"></span>
+      <button class="odo" data-act="km" type="button" aria-label="Km-óra állás megadása">
+        <span class="l">Km-óra</span><span class="v" id="odo">—</span>
+      </button>
+      <button class="icon-btn" data-act="settings" type="button" aria-label="Autó adatai és mentés">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Nézetek">
+    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="auto" aria-selected="true">Autó</button>
+    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="naplo" aria-selected="false">Napló</button>
+    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="papirok" aria-selected="false">Papírok <span class="cnt" id="cnt-docs" hidden></span></button>
+    <button class="tab-btn" role="tab" type="button" data-act="tab" data-tab="terv" aria-selected="false">Szervizterv <span class="cnt" id="cnt-plan" hidden></span></button>
+  </nav>
+
+  <main>
+    <section class="tab" id="tab-auto">
+      <div class="auto-grid">
+        <figure class="sheet dg-wrap">
+          <svg id="dg" role="group" aria-label="A Honda Jazz axonometrikus vázlata számozott alkatrészcsoportokkal"></svg>
+          <figcaption class="dg-foot">
+            <div class="legend" aria-label="Jelmagyarázat">
+              <span class="ok"><i></i>Rendben</span><span class="warn"><i></i>Hamarosan / tervezett</span><span class="bad"><i></i>Lejárt</span><span><i></i>Nincs adat</span>
+            </div>
+            <div class="titleblock">1. ábra · GD1 vázlat · méretek mm-ben</div>
+          </figcaption>
+        </figure>
+        <div class="side">
+          <section class="sheet" aria-labelledby="h-todo">
+            <div class="sec-h"><h2 class="sec" id="h-todo">Teendők</h2><span class="mode" id="mode"><i></i><span>Betöltés…</span></span></div>
+            <div class="todo-list" id="todo"><div class="loading">Adatok betöltése…</div></div>
+          </section>
+          <section class="sheet" aria-labelledby="h-groups">
+            <div class="sec-h"><h2 class="sec" id="h-groups">Alkatrészcsoportok</h2><span class="hint">Koppints egy sorra vagy számra</span></div>
+            <ol class="groups" id="groups"></ol>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab" id="tab-naplo" hidden>
+      <div class="sec-h">
+        <h2 class="sec">Javítások és cserék</h2>
+        <button class="btn primary" type="button" data-act="new-entry">+ Új bejegyzés</button>
+      </div>
+      <div class="sheet stats" id="stats"></div>
+      <div class="toolbar">
+        <div class="field"><label for="f-group">Csoport</label><select id="f-group"></select></div>
+        <div class="field"><label for="f-kind">Típus</label><select id="f-kind"></select></div>
+      </div>
+      <div id="log"></div>
+    </section>
+
+    <section class="tab" id="tab-papirok" hidden>
+      <div class="sec-h">
+        <h2 class="sec">Papírok, biztosítás, matrica</h2>
+        <button class="btn primary" type="button" data-act="new-doc">+ Új papír</button>
+      </div>
+      <div class="docs" id="docs"></div>
+    </section>
+
+    <section class="tab" id="tab-terv" hidden>
+      <div class="sec-h"><h2 class="sec">Szervizterv</h2><button class="btn sm" type="button" data-act="plan-reset">Alapértékek visszaállítása</button></div>
+      <p class="note">Az intervallumok kiinduló értékek egy 2004-es 1.2 i-DSI Jazzhez. Egyeztesd őket a szervizkönyvvel vagy a szerelőddel, és írd át itt. Mindig az számít, amelyik előbb lejár: a kilométer vagy az idő.</p>
+      <div class="sheet plan" id="plan"></div>
+    </section>
+  </main>
+</div>
+
+<!-- csoport -->
+<dialog id="dlg-group" aria-labelledby="g-title"><div id="g-body"></div></dialog>
+
+<!-- bejegyzés -->
+<dialog id="dlg-entry" aria-labelledby="e-title">
+  <form id="f-entry" method="dialog" novalidate>
+    <div class="dlg-h"><div><div class="eyebrow">Napló</div><h2 id="e-title">Új bejegyzés</h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+    <div class="dlg-b">
+      <fieldset class="field"><legend>Állapot</legend>
+        <div class="seg">
+          <span><input type="radio" name="status" id="es-kesz" value="kesz"><label for="es-kesz">Elvégezve</label></span>
+          <span><input type="radio" name="status" id="es-terv" value="tervezett"><label for="es-terv">Tervezett / teendő</label></span>
+        </div>
+      </fieldset>
+      <fieldset class="field"><legend>Típus</legend>
+        <div class="seg">
+          <span><input type="radio" name="kind" id="ek-csere" value="csere"><label for="ek-csere">Csere</label></span>
+          <span><input type="radio" name="kind" id="ek-javitas" value="javitas"><label for="ek-javitas">Javítás</label></span>
+          <span><input type="radio" name="kind" id="ek-ellenorzes" value="ellenorzes"><label for="ek-ellenorzes">Ellenőrzés</label></span>
+          <span><input type="radio" name="kind" id="ek-megjegyzes" value="megjegyzes"><label for="ek-megjegyzes">Megjegyzés</label></span>
+        </div>
+      </fieldset>
+      <div class="row2">
+        <div class="field"><label for="e-group">Csoport</label><select id="e-group"></select></div>
+        <div class="field"><label for="e-part">Alkatrész / munka</label><select id="e-part"></select></div>
+      </div>
+      <div class="field" id="e-custom-w" hidden><label for="e-custom">Saját megnevezés</label><input type="text" id="e-custom" maxlength="120" placeholder="pl. Bal első ablakemelő"></div>
+      <div class="row2">
+        <div class="field"><label for="e-date">Dátum</label><input type="date" id="e-date"></div>
+        <div class="field"><label for="e-km">Km-óra állás</label><input type="number" id="e-km" inputmode="numeric" min="0" step="1" placeholder="pl. 186400"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="e-cost">Költség (Ft)</label><input type="number" id="e-cost" inputmode="numeric" min="0" step="1"></div>
+        <div class="field"><label for="e-shop">Szerviz / bolt</label><input type="text" id="e-shop" maxlength="120"></div>
+      </div>
+      <div class="field"><label for="e-desc">Leírás</label><textarea id="e-desc" rows="3" maxlength="4000" placeholder="Mit csináltak, milyen alkatrész került bele, cikkszám…"></textarea></div>
+      <div class="field" id="e-files-w"><span class="lbl">Számla, fotó</span>
+        <div class="files" id="e-files"></div>
+        <div><label class="btn sm" for="e-file">+ Fájl hozzáadása</label><input type="file" id="e-file" class="vh" accept="image/*,application/pdf" multiple></div>
+        <p class="hint">JPG, PNG vagy PDF. A nagy fotókat mentés előtt automatikusan kicsinyíti.</p>
+      </div>
+      <p class="err" id="e-err" hidden></p>
+    </div>
+    <div class="dlg-f">
+      <button class="btn danger" type="button" id="e-del" hidden>Törlés</button><span class="sp"></span>
+      <button class="btn" type="button" data-act="close">Mégse</button>
+      <button class="btn primary" type="submit" id="e-save">Mentés</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- papír -->
+<dialog id="dlg-doc" aria-labelledby="d-title">
+  <form id="f-doc" method="dialog" novalidate>
+    <div class="dlg-h"><div><div class="eyebrow">Papírok</div><h2 id="d-title">Új papír</h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+    <div class="dlg-b">
+      <div class="row2">
+        <div class="field"><label for="d-type">Fajta</label><select id="d-type"></select></div>
+        <div class="field"><label for="d-name">Megnevezés / szolgáltató</label><input type="text" id="d-name" maxlength="120" placeholder="pl. biztosító neve"></div>
+      </div>
+      <div class="field"><label for="d-number">Szám / azonosító</label><input type="text" id="d-number" maxlength="80" placeholder="kötvényszám, matrica azonosító…"></div>
+      <div class="row2">
+        <div class="field"><label for="d-from">Érvényes ettől</label><input type="date" id="d-from"></div>
+        <div class="field"><label for="d-to">Érvényes eddig</label><input type="date" id="d-to"></div>
+      </div>
+      <div class="field"><label for="d-cost">Díj (Ft)</label><input type="number" id="d-cost" inputmode="numeric" min="0" step="1"></div>
+      <div class="field"><label for="d-note">Megjegyzés</label><textarea id="d-note" rows="2" maxlength="2000"></textarea></div>
+      <div class="field" id="d-files-w"><span class="lbl">Fotó, PDF</span>
+        <div class="files" id="d-files"></div>
+        <div><label class="btn sm" for="d-file">+ Fájl hozzáadása</label><input type="file" id="d-file" class="vh" accept="image/*,application/pdf" multiple></div>
+      </div>
+      <p class="err" id="d-err" hidden></p>
+    </div>
+    <div class="dlg-f">
+      <button class="btn danger" type="button" id="d-del" hidden>Törlés</button><span class="sp"></span>
+      <button class="btn" type="button" data-act="close">Mégse</button>
+      <button class="btn primary" type="submit" id="d-save">Mentés</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- km -->
+<dialog id="dlg-km" aria-labelledby="k-title">
+  <form id="f-km" method="dialog" novalidate>
+    <div class="dlg-h"><div><div class="eyebrow">Km-óra</div><h2 id="k-title">Aktuális állás</h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+    <div class="dlg-b">
+      <div class="field"><label for="k-km">Km-óra állás</label><input type="number" id="k-km" inputmode="numeric" min="0" step="1"></div>
+      <p class="hint" id="k-hint"></p>
+    </div>
+    <div class="dlg-f"><span class="sp"></span><button class="btn" type="button" data-act="close">Mégse</button><button class="btn primary" type="submit">Mentés</button></div>
+  </form>
+</dialog>
+
+<!-- beállítások -->
+<dialog id="dlg-settings" aria-labelledby="s-title">
+  <form id="f-settings" method="dialog" novalidate>
+    <div class="dlg-h"><div><div class="eyebrow">Beállítások</div><h2 id="s-title">Autó és adatok</h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+    <div class="dlg-b">
+      <div>
+        <h3>Autó</h3>
+        <div class="kv">
+          <div class="row2">
+            <div class="field"><label for="s-plate">Rendszám</label><input type="text" id="s-plate" maxlength="12" autocomplete="off" placeholder="ABC-123"></div>
+            <div class="field"><label for="s-vin">Alvázszám (VIN)</label><input type="text" id="s-vin" maxlength="17" autocomplete="off"></div>
+          </div>
+          <div class="field"><label for="s-note">Megjegyzés</label><input type="text" id="s-note" maxlength="200" placeholder="pl. szín, motorkód, gumiméret"></div>
+          <div><button class="btn primary sm" type="submit">Autó adatainak mentése</button></div>
+        </div>
+      </div>
+      <div>
+        <h3>Hol vannak az adatok?</h3>
+        <p class="hint" id="s-mode"></p>
+      </div>
+      <div>
+        <h3>Biztonsági mentés</h3>
+        <div class="chips">
+          <button class="btn sm" type="button" data-act="export">Mentés fájlba (JSON)</button>
+          <label class="btn sm" for="s-import">Visszatöltés fájlból</label><input type="file" id="s-import" class="vh" accept="application/json,.json">
+        </div>
+        <p class="hint" style="margin-top:8px">A mentés a számlafotókat is tartalmazza. Visszatöltéskor a meglévő adatok megmaradnak, az azonos bejegyzések frissülnek.</p>
+      </div>
+      <div>
+        <h3>Kipróbálás</h3>
+        <div class="chips">
+          <button class="btn sm" type="button" data-act="sample-load">Példaadatok betöltése</button>
+          <button class="btn sm danger" type="button" data-act="sample-clear">Példaadatok törlése</button>
+        </div>
+        <p class="hint" style="margin-top:8px">A példák „Példa” jelölést kapnak, és egy gombnyomással törölhetők. A saját bejegyzéseidhez nem nyúl.</p>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- kép -->
+<dialog id="dlg-img" aria-labelledby="i-title" class="lightbox">
+  <div class="dlg-h"><div><div class="eyebrow">Csatolmány</div><h2 id="i-title" style="font-size:17px;text-transform:none;letter-spacing:0"></h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+  <div class="dlg-b"><img id="i-img" alt=""><a class="btn sm" id="i-open" href="#" target="_blank" rel="noopener">Megnyitás új lapon</a></div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- Tartalom ---------- */
+const PLAN = [
+  {key:'olaj', label:'Motorolaj + olajszűrő', group:'motor', km:10000, months:12, kind:'csere'},
+  {key:'levego', label:'Levegőszűrő', group:'motor', km:30000, months:24, kind:'csere'},
+  {key:'gyertya', label:'Gyújtógyertyák (8 db)', group:'motor', km:40000, months:48, kind:'csere'},
+  {key:'szelep', label:'Szelephézag-beállítás', group:'motor', km:40000, months:48, kind:'ellenorzes'},
+  {key:'szij', label:'Hosszbordás szíj', group:'motor', km:60000, months:60, kind:'csere'},
+  {key:'hutofoly', label:'Hűtőfolyadék', group:'hutes', km:null, months:60, kind:'csere'},
+  {key:'valto', label:'Váltóolaj', group:'valto', km:60000, months:72, kind:'csere'},
+  {key:'fekfoly', label:'Fékfolyadék', group:'fekE', km:null, months:36, kind:'csere'},
+  {key:'fekE', label:'Első fékbetétek és tárcsák', group:'fekE', km:20000, months:12, kind:'ellenorzes'},
+  {key:'fekH', label:'Hátsó fékpofák és dobok', group:'fekH', km:30000, months:24, kind:'ellenorzes'},
+  {key:'futomu', label:'Futómű és kormány', group:'futE', km:20000, months:12, kind:'ellenorzes'},
+  {key:'gumi', label:'Gumicsere (nyári/téli)', group:'kerek', km:null, months:6, kind:'csere'},
+  {key:'kipufogo', label:'Kipufogórendszer', group:'kipufogo', km:null, months:12, kind:'ellenorzes'},
+  {key:'akku', label:'Akkumulátor', group:'elektromos', km:null, months:12, kind:'ellenorzes'},
+  {key:'pollen', label:'Pollenszűrő', group:'utaster', km:20000, months:12, kind:'csere'},
+  {key:'klima', label:'Klíma', group:'utaster', km:null, months:24, kind:'ellenorzes'},
+  {key:'ablaktorlo', label:'Ablaktörlő lapátok', group:'utaster', km:null, months:12, kind:'csere'},
+  {key:'rozsda', label:'Rozsda (küszöbök, kerékívek)', group:'karosszeria', km:null, months:12, kind:'ellenorzes'},
+];
+
+const GEO = {L:3830, W:1675, H:1525, XF:760, XR:3210};
+const GROUPS = [
+  {id:'motor', name:'Motor és gyújtás', anchor:[470,730,930],
+   note:'L12A1 i-DSI motor, 1246 cm³, hengerenként két gyújtógyertyával és vezérműlánccal.',
+   extra:['Vezérműlánc és feszítő','Gyújtótekercsek','Szelepfedél-tömítés','Motortartó bakok','Olajszivárgás']},
+  {id:'hutes', name:'Hűtőrendszer', anchor:[120,840,780],
+   note:'A hűtő a motor előtt van. A folyadékszintet hideg motornál, a kiegyenlítő tartályon nézd.',
+   extra:['Hűtő','Termosztát','Vízpumpa','Hűtőcsövek','Hűtőventilátor']},
+  {id:'valto', name:'Váltó és kuplung', anchor:[490,1300,720],
+   note:'Kézi váltó és kuplung, féltengelyek gumiharanggal.',
+   extra:['Kuplungszett','Kuplung-munkahenger','Féltengely-gumiharang','Váltótartó bak','Váltóbowden']},
+  {id:'fekE', name:'Első fékek', anchor:[GEO.XF+125, GEO.W-280, 470],
+   note:'Elöl tárcsafék. A fékfolyadék cseréje a teljes fékrendszert érinti.',
+   extra:['Első féktárcsák','Féknyereg','Fékcsövek']},
+  {id:'fekH', name:'Hátsó fékek', anchor:[GEO.XR, GEO.W-250, 410],
+   note:'Hátul dobfék. Ide tartozik a kézifék is.',
+   extra:['Kerékfékhenger','Kézifék-bowden']},
+  {id:'futE', name:'Első futómű és kormány', anchor:[GEO.XF+70, GEO.W-360, 930],
+   note:'McPherson rugóstagok, alsó lengőkarok, fogasléces kormánymű.',
+   extra:['Első lengéscsillapítók','Toronycsapágyak','Lengőkar-szilentek','Gömbfejek','Kormányösszekötő-gömbfejek','Stabilizátor-pálcák','Futómű-beállítás']},
+  {id:'futH', name:'Hátsó futómű', anchor:[GEO.XR-60, GEO.W/2, 320],
+   note:'Csatolt lengőkaros hátsó híd csavarrugókkal.',
+   extra:['Hátsó lengéscsillapítók','Hátsó rugók','Hátsó híd szilentjei','Hátsó kerékcsapágyak']},
+  {id:'kerek', name:'Kerekek és gumik', anchor:[GEO.XR+130, GEO.W-60, 40],
+   note:'A pontos gumiméretet a vezetőoldali ajtófélfa matricáján vagy a forgalmiban találod.',
+   extra:['Nyári gumik','Téli gumik','Centírozás','Defektjavítás','Pótkerék']},
+  {id:'kipufogo', name:'Kipufogó', anchor:[3510,510,340],
+   note:'Lambdaszonda, katalizátor, hátsó dob és a felfüggesztő gumik.',
+   extra:['Lambdaszonda','Katalizátor','Középdob','Hátsó dob','Felfüggesztő gumik']},
+  {id:'uzemanyag', name:'Üzemanyag-rendszer', anchor:[1825,875,430],
+   note:'A Jazz tankja középen, az első ülések alatt van. Ezért lehet a hátsó Magic Seat üléseket felhajtani és a padlóba süllyeszteni.',
+   extra:['Üzemanyag-szivattyú','Üzemanyagszűrő','Injektorok','Fojtószelep-tisztítás','Tanksapka']},
+  {id:'elektromos', name:'Elektromos rendszer és világítás', anchor:[510,1265,960],
+   note:'Akkumulátor, töltés, indítás és a lámpák.',
+   extra:['Generátor','Önindító','Fényszóró izzók','Hátsó lámpa izzók','Fényszóró-beállítás','Biztosítékok']},
+  {id:'utaster', name:'Utastér és klíma', anchor:[1125,840,980],
+   note:'A pollenszűrő általában a kesztyűtartó mögött érhető el.',
+   extra:['Ablakmosó','Ablakemelők','Fűtés / ventilátor','Ülések (Magic Seat)']},
+  {id:'karosszeria', name:'Karosszéria', anchor:[2500,GEO.W,330],
+   note:'Ennél a kornál a küszöböket és a hátsó kerékíveket érdemes évente rozsdára átnézni.',
+   extra:['Küszöbök','Hátsó kerékívek','Ajtózárak','Csomagtérajtó-teleszkópok','Fényezés','Szélvédő']},
+];
+GROUPS.forEach((g,i) => {
+  g.n = i + 1;
+  g.parts = [...PLAN.filter(p => p.group === g.id).map(p => ({name:p.label, plan:p.key})), ...g.extra.map(name => ({name}))];
+});
+const G = Object.fromEntries(GROUPS.map(g => [g.id, g]));
+
+const KINDS = {csere:'Csere', javitas:'Javítás', ellenorzes:'Ellenőrzés', megjegyzes:'Megjegyzés'};
+const DOC_TYPES = [
+  {id:'kgfb', name:'Kötelező biztosítás (KGFB)'},
+  {id:'casco', name:'CASCO'},
+  {id:'muszaki', name:'Műszaki vizsga'},
+  {id:'matrica', name:'Autópálya-matrica'},
+  {id:'zoldkartya', name:'Zöldkártya'},
+  {id:'forgalmi', name:'Forgalmi engedély'},
+  {id:'torzskonyv', name:'Törzskönyv'},
+  {id:'ado', name:'Gépjárműadó'},
+  {id:'adasvetel', name:'Adásvételi szerződés'},
+  {id:'egyeb', name:'Egyéb'},
+];
+const DT = Object.fromEntries(DOC_TYPES.map(d => [d.id, d]));
+const ESSENTIAL = ['kgfb','muszaki','matrica','forgalmi','torzskonyv'];
+const OK_TYPES = ['image/jpeg','image/png','image/webp','image/gif','application/pdf'];
+
+/* ---------- Segédek ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NF = new Intl.NumberFormat('hu-HU');
+const fmtKm = n => (n == null || n === '') ? '—' : NF.format(n) + ' km';
+const fmtFt = n => (n == null || n === '') ? '' : NF.format(n) + ' Ft';
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseISO = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const todayISO = () => iso(new Date());
+const fmtDate = s => s ? s.split('-').join('. ') + '.' : '—';
+const addMonths = (s, m) => { const d = parseISO(s); const day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + m); const last = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); d.setDate(Math.min(day, last)); return iso(d); };
+const addDays = (s, n) => { const d = parseISO(s); d.setDate(d.getDate() + n); return iso(d); };
+const daysBetween = (a, b) => Math.round((parseISO(b) - parseISO(a)) / 86400000);
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/-/g, '');
+const clean = o => JSON.parse(JSON.stringify(o));
+const num = v => { if (v === '' || v == null) return null; const n = Math.round(Number(v)); return Number.isFinite(n) && n >= 0 ? n : null; };
+const RANK = {bad:3, warn:2, ok:1, none:0};
+const ST_LABEL = {ok:'Rendben', warn:'Hamarosan', bad:'Lejárt', none:'Nincs adat'};
+
+let toastT = 0;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200);
+}
+function errMsg(e) {
+  const c = e && e.code;
+  if (c === 'invalid_argument' || c === 'not_granted') return 'Ehhez nincs módosítási jogod ezen az oldalon.';
+  if (c === 'quota_exceeded' || c === 'quota_or_state') return 'Megtelt a tárhely. Törölj régi csatolmányokat, és próbáld újra.';
+  if (c === 'too_large') return 'A fájl túl nagy (legfeljebb 20 MB lehet).';
+  if (c === 'unsupported_type') return 'Ez a fájlformátum nem támogatott. JPG, PNG vagy PDF lehet.';
+  if (c === 'rate_limited' || c === 'resource_exhausted') return 'Túl sok művelet egyszerre. Várj pár másodpercet, és próbáld újra.';
+  if (c === 'declined') return 'A mentést elutasítottad.';
+  return (e && e.message) ? e.message : 'Valami nem sikerült. Próbáld újra.';
+}
+
+/* ---------- Tárolók ---------- */
+function idbOpen() {
+  return new Promise((res, rej) => {
+    if (!('indexedDB' in window)) return rej(new Error('no idb'));
+    const r = indexedDB.open('jazz-szervizkonyv', 1);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      for (const n of ['entries','docs','files']) if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, {keyPath:'id'});
+      if (!d.objectStoreNames.contains('kv')) d.createObjectStore('kv', {keyPath:'key'});
+    };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function idbDo(db, store, mode, fn) {
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode); const r = fn(t.objectStore(store)); let out;
+    if (r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  });
+}
+function saveViaLink(name, text) {
+  const url = URL.createObjectURL(new Blob([text], {type:'application/json'}));
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+async function localStore(downloads) {
+  let idb = null;
+  try { idb = await idbOpen(); } catch (_) {}
+  const mem = {entries:new Map(), docs:new Map(), files:new Map(), kv:new Map()};
+  const all = s => idb ? idbDo(idb, s, 'readonly', st => st.getAll()) : Promise.resolve([...mem[s].values()]);
+  const one = (s, k) => idb ? idbDo(idb, s, 'readonly', st => st.get(k)) : Promise.resolve(mem[s].get(k));
+  const put = (s, v) => idb ? idbDo(idb, s, 'readwrite', st => st.put(v)) : Promise.resolve(mem[s].set(v.id ?? v.key, v));
+  const del = (s, k) => idb ? idbDo(idb, s, 'readwrite', st => st.delete(k)) : Promise.resolve(mem[s].delete(k));
+  const urls = new Map();
+  let listener = null;
+  async function emit() {
+    const [entries, docs, kv] = await Promise.all([all('entries'), all('docs'), all('kv')]);
+    const s = kv.find(k => k.key === 'settings');
+    listener && listener({entries, docs, settings: s ? s.value : {}});
+  }
+  return {
+    mode: idb ? 'local' : 'memory', canUpload: true,
+    subscribe(fn) { listener = fn; emit(); },
+    async saveEntry(e) { e = clean(e); e.id = e.id || uid(); await put('entries', e); emit(); return e.id; },
+    async deleteEntry(id) { await del('entries', id); emit(); },
+    async saveDoc(d) { d = clean(d); d.id = d.id || uid(); await put('docs', d); emit(); return d.id; },
+    async deleteDoc(id) { await del('docs', id); emit(); },
+    async saveSettings(s) { await put('kv', {key:'settings', value: clean(s)}); emit(); },
+    async uploadFile(file) { const id = uid(); await put('files', {id, blob:file, name:file.name, type:file.type}); return {id, name:file.name, type:file.type, size:file.size}; },
+    async fileUrl(ref) {
+      if (urls.has(ref.id)) return urls.get(ref.id);
+      const r = await one('files', ref.id); if (!r) return '';
+      const u = URL.createObjectURL(r.blob); urls.set(ref.id, u); return u;
+    },
+    async fileBlob(ref) { const r = await one('files', ref.id); return r ? r.blob : null; },
+    async deleteFile(ref) { await del('files', ref.id); },
+    async download(name, text) { if (downloads) return downloads.save({filename:name, data:text}); saveViaLink(name, text); },
+  };
+}
+
+function cloudStore(db, assets, downloads) {
+  const E = db.collection('entries'), D = db.collection('docs'), C = db.doc('settings/car');
+  const st = {entries:[], docs:[], settings:{}}; const got = {e:false, d:false, s:false};
+  let chain = Promise.resolve();
+  const queued = fn => (chain = chain.then(fn, fn));
+  return {
+    mode:'cloud', canUpload: !!assets,
+    subscribe(fn) {
+      const push = () => { if (got.e && got.d && got.s) fn({entries:st.entries, docs:st.docs, settings:st.settings}); };
+      const onErr = e => { toast('Az adatok nem tölthetők be: ' + errMsg(e)); got.e = got.d = got.s = true; push(); };
+      E.onSnapshot(s => { st.entries = s.docs.map(d => ({...d.data(), id:d.id})); got.e = true; push(); }, onErr);
+      D.onSnapshot(s => { st.docs = s.docs.map(d => ({...d.data(), id:d.id})); got.d = true; push(); }, onErr);
+      C.onSnapshot(s => { st.settings = s.exists ? {...s.data()} : {}; got.s = true; push(); }, onErr);
+    },
+    async saveEntry(e) { const ref = e.id ? E.doc(e.id) : E.doc(); await ref.set(clean({...e, id:ref.id})); return ref.id; },
+    deleteEntry(id) { return E.doc(id).delete(); },
+    async saveDoc(d) { const ref = d.id ? D.doc(d.id) : D.doc(); await ref.set(clean({...d, id:ref.id})); return ref.id; },
+    deleteDoc(id) { return D.doc(id).delete(); },
+    saveSettings(s) { return queued(() => C.set(clean(s))); },
+    async uploadFile(file) { const r = await assets.upload(file, {type:file.type}); return {id:r.id, name:file.name, type:r.contentType, size:r.sizeBytes}; },
+    async fileUrl(ref) { return '/_blob/' + ref.id; },
+    async fileBlob(ref) { const r = await fetch('/_blob/' + ref.id); return r.ok ? r.blob() : null; },
+    async deleteFile(ref) { if (assets) await assets.delete(ref.id); },
+    async download(name, text) { if (!downloads) throw new Error('A letöltés itt nem érhető el.'); return downloads.save({filename:name, data:text}); },
+  };
+}
+
+async function initStore() {
+  const c = window.claude;
+  if (c && typeof c.use === 'function') {
+    let db = null, downloads = null;
+    try { db = await c.use('db'); } catch (_) {}
+    try { downloads = await c.use('downloads'); } catch (_) {}
+    if (db) {
+      let assets = null; try { assets = await c.use('assets'); } catch (_) {}
+      return cloudStore(db, assets, downloads);
+    }
+    return localStore(downloads);
+  }
+  return localStore(null);
+}
+
+/* ---------- Állapot ---------- */
+const S = {entries:[], docs:[], settings:{}, loaded:false, tab:'auto', fGroup:'', fKind:'', openGroup:null};
+let store = null;
+
+function planOf(key) {
+  const d = PLAN.find(p => p.key === key); const o = (S.settings.plan || {})[key] || {};
+  return {...d, km: ('km' in o) ? o.km : d.km, months: ('months' in o) ? o.months : d.months};
+}
+function lastDone(key) {
+  return S.entries.filter(e => e.plan === key && e.status !== 'tervezett' && e.kind !== 'megjegyzes' && e.date)
+    .sort((a, b) => b.date.localeCompare(a.date) || (b.km || 0) - (a.km || 0))[0] || null;
+}
+function planStatus(key) {
+  const p = planOf(key); const done = lastDone(key);
+  if (!done) return {p, st:'none', done:null};
+  const dueDate = p.months ? addMonths(done.date, p.months) : null;
+  const dueKm = (p.km && done.km != null) ? done.km + p.km : null;
+  const cur = S.settings.km;
+  const daysLeft = dueDate ? daysBetween(todayISO(), dueDate) : null;
+  const kmLeft = (dueKm != null && cur != null) ? dueKm - cur : null;
+  if (daysLeft == null && kmLeft == null) return {p, st:'none', done, dueDate, dueKm};
+  let st = 'ok';
+  if ((daysLeft != null && daysLeft < 0) || (kmLeft != null && kmLeft < 0)) st = 'bad';
+  else if ((daysLeft != null && daysLeft <= 45) || (kmLeft != null && kmLeft <= 1500)) st = 'warn';
+  return {p, st, done, dueDate, dueKm, daysLeft, kmLeft};
+}
+function dueText(s) {
+  const out = [];
+  if (s.daysLeft != null) out.push(s.daysLeft < 0 ? `${NF.format(-s.daysLeft)} napja lejárt` : s.daysLeft === 0 ? 'ma esedékes' : `${NF.format(s.daysLeft)} nap múlva`);
+  if (s.kmLeft != null) out.push(s.kmLeft < 0 ? `${NF.format(-s.kmLeft)} km-rel túllépve` : `${NF.format(s.kmLeft)} km múlva`);
+  return out.join(' · ');
+}
+function docStatus(d) {
+  if (!d.to) return {st:'none', text:'Nincs lejárat'};
+  const n = daysBetween(todayISO(), d.to);
+  if (n < 0) return {st:'bad', text:`Lejárt ${NF.format(-n)} napja`, days:n};
+  if (n === 0) return {st:'bad', text:'Ma lejár', days:n};
+  if (n <= 30) return {st:'warn', text:`${NF.format(n)} nap múlva lejár`, days:n};
+  return {st:'ok', text:'Érvényes', days:n};
+}
+function groupStatus(gid) {
+  let best = 'none';
+  const bump = st => { if (RANK[st] > RANK[best]) best = st; };
+  PLAN.filter(p => p.group === gid).forEach(p => bump(planStatus(p.key).st));
+  if (S.entries.some(e => e.group === gid && e.status === 'tervezett')) bump('warn');
+  if (best === 'none' && S.entries.some(e => e.group === gid)) best = 'ok';
+  return best;
+}
+function groupSummary(gid) {
+  const planned = S.entries.filter(e => e.group === gid && e.status === 'tervezett');
+  const urgent = PLAN.filter(p => p.group === gid).map(p => planStatus(p.key)).filter(s => s.st === 'bad' || s.st === 'warn')
+    .sort((a, b) => RANK[b.st] - RANK[a.st]);
+  if (urgent.length) return (urgent[0].st === 'bad' ? 'Lejárt: ' : 'Hamarosan: ') + urgent[0].p.label + (urgent.length > 1 ? ` és még ${urgent.length - 1}` : '');
+  if (planned.length) return 'Tervezett: ' + planned[0].part;
+  const done = S.entries.filter(e => e.group === gid && e.status !== 'tervezett' && e.date).sort((a, b) => b.date.localeCompare(a.date));
+  if (done.length) return `Utoljára: ${fmtDate(done[0].date)} · ${done[0].part}`;
+  return 'Még nincs bejegyzés';
+}
+function todos() {
+  const out = [];
+  PLAN.forEach(p => {
+    const s = planStatus(p.key);
+    if (s.st === 'bad' || s.st === 'warn') out.push({rank:RANK[s.st], st:s.st, type:'plan', key:p.key, title:p.label, sub:`${G[p.group].n} · ${G[p.group].name} · ${dueText(s)}`});
+  });
+  S.docs.forEach(d => {
+    const s = docStatus(d);
+    if (s.st === 'bad' || s.st === 'warn') out.push({rank:RANK[s.st], st:s.st, type:'doc', id:d.id, title:DT[d.type]?.name || 'Papír', sub:`${d.title ? d.title + ' · ' : ''}${s.text} (${fmtDate(d.to)})`});
+  });
+  S.entries.filter(e => e.status === 'tervezett').forEach(e => {
+    const g = G[e.group];
+    out.push({rank:1.5, st:'plan', type:'entry', id:e.id, title:e.part, sub:`${g ? g.n + ' · ' + g.name : ''} · tervezett${e.date ? ' · ' + fmtDate(e.date) : ''}`});
+  });
+  return out.sort((a, b) => b.rank - a.rank);
+}
+
+/* ---------- Ábra ---------- */
+const VB = {x:0, y:0, w:1, h:1};
+function buildDiagram() {
+  const {L, W, XF, XR} = GEO;
+  const AX = [0.94, -0.342], AY = [0.42, 0.30], AZ = 0.95;
+  const ROTX = Math.atan2(AX[1], AX[0]) * 180 / Math.PI, ROTY = Math.atan2(AY[1], AY[0]) * 180 / Math.PI;
+  const P = (x, y, z) => [x*AX[0] + y*AY[0], x*AX[1] + y*AY[1] - z*AZ];
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  const track = q => { if (q[0] < minX) minX = q[0]; if (q[0] > maxX) maxX = q[0]; if (q[1] < minY) minY = q[1]; if (q[1] > maxY) maxY = q[1]; return q; };
+  const f = n => n.toFixed(1);
+  const ss = qs => qs.map(q => f(q[0]) + ',' + f(q[1])).join(' ');
+  const pts = a => ss(a.map(p => track(P(p[0], p[1], p[2]))));
+  const poly = (a, c) => `<polygon class="${c}" points="${pts(a)}"/>`;
+  const pl = (a, c) => `<polyline class="${c}" points="${pts(a)}"/>`;
+  const ring = (xc, y, zc, r, n = 40) => Array.from({length:n}, (_, i) => { const t = i / n * Math.PI * 2; return [xc + r*Math.cos(t), y, zc + r*Math.sin(t)]; });
+  function hull(ps) {
+    const p = ps.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cr = (o, a, b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+    const lo = [], up = [];
+    for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length-2], lo[lo.length-1], q) <= 0) lo.pop(); lo.push(q); }
+    for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cr(up[up.length-2], up[up.length-1], q) <= 0) up.pop(); up.push(q); }
+    up.pop(); lo.pop(); return lo.concat(up);
+  }
+  const cyl = (xc, zc, r, y0, y1, side = 'f-side', face = 'f-top') => {
+    const a = ring(xc, y0, zc, r), b = ring(xc, y1, zc, r);
+    const h = hull(a.concat(b).map(p => track(P(...p))));
+    return `<polygon class="${side}" points="${ss(h)}"/>` + poly(b, face);
+  };
+  const box = (x0, x1, y0, y1, z0, z1) =>
+    poly([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]], 'f-top') +
+    poly([[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]], 'f-front') +
+    poly([[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]], 'f-side');
+  const cmp = (g, inner, extra = '') => `<g class="cmp${extra}" data-g="${g}"><title>${esc(G[g].n + ' · ' + G[g].name)}</title>${inner}</g>`;
+  const spring = (x, y, z0, z1, turns = 6, amp = 55) => {
+    const a = [], n = turns * 2;
+    for (let i = 0; i <= n; i++) a.push([x + (i === 0 || i === n ? 0 : (i % 2 ? amp : -amp)), y, z0 + (z1 - z0) * i / n]);
+    return pl(a, 'spring');
+  };
+  const pipe = a => pl(a, 'pipe-o') + pl(a, 'pipe-i');
+  const mirrorY = a => a.map(([x, y, z]) => [x, W - y, z]);
+  const px = [];  // fix pixel-méretű feliratok
+
+  let s = '';
+  // talaj rács
+  for (let x = -300; x <= L + 300; x += 500) s += pl([[x,-300,0],[x,W+300,0]], 'grid');
+  for (let y = -300; y <= W + 300; y += 500) s += pl([[-300,y,0],[L+300,y,0]], 'grid');
+  // méretvonalak
+  const dimX = (x0, x1, y, label) => {
+    s += pl([[x0,y,0],[x1,y,0]], 'dimln') + pl([[x0,y-90,0],[x0,y+90,0]], 'dimln') + pl([[x1,y-90,0],[x1,y+90,0]], 'dimln');
+    const m = track(P((x0+x1)/2, y, 0)); px.push({x:m[0], y:m[1], rot:ROTX.toFixed(1), html:`<text class="dim-t" y="-5">${label}</text>`});
+  };
+  const dimY = (x, y0, y1, label) => {
+    s += pl([[x,y0,0],[x,y1,0]], 'dimln') + pl([[x-90,y0,0],[x+90,y0,0]], 'dimln') + pl([[x-90,y1,0],[x+90,y1,0]], 'dimln');
+    const m = track(P(x, (y0+y1)/2, 0)); px.push({x:m[0], y:m[1], rot:ROTY.toFixed(1), html:`<text class="dim-t" y="-5">${label}</text>`});
+  };
+  dimX(XF, XR, W + 380, 'tengelytáv 2450');
+  dimX(0, L, W + 760, 'hossz 3830');
+  dimY(-380, 0, W, 'szélesség 1675');
+
+  // karosszéria profil (x, z)
+  const top = [[60,230],[10,420],[0,560],[30,690],[250,790],[950,985],[1640,1470],[1800,1515],[3350,1505],[3600,1440],[3780,1120],[3830,900],[3830,520],[3800,250]];
+  const arch = xc => { const r = 350, a = []; for (let i = 0; i <= 16; i++) { const t = -0.17 + (Math.PI + 0.34) * i / 16; a.push([xc + r*Math.cos(t), 290 + r*Math.sin(t)]); } return a; };
+  const profile = top.concat(arch(XR), arch(XF));
+  const side = y => profile.map(([x, z]) => [x, y, z]);
+  s += poly(side(0), 'far');
+
+  // távoli kerekek, fékek, rugóstag
+  s += cmp('kerek', cyl(XF, 290, 290, 60, 235, 'tire', 'tire') + cyl(XR, 290, 290, 60, 235, 'tire', 'tire'));
+  s += cmp('fekE', cyl(XF, 290, 135, 270, 300) + box(XF+70, XF+180, 250, 310, 330, 470));
+  s += cmp('fekH', cyl(XR, 290, 125, 250, 310));
+  s += cmp('futE', pl([[XF+20,330,330],[XF+70,360,930]], 'rod') + spring(XF+50, 345, 600, 880));
+  s += cmp('futH', pl([[XR+80,330,300],[XR+110,350,760]], 'rod') + spring(XR-200, 360, 330, 720));
+
+  // padló alatti részek
+  s += cmp('kipufogo',
+    pipe([[650,700,470],[860,720,300],[900,720,265]]) + box(900,1180,620,820,200,330) +
+    pipe([[1180,720,265],[1350,330,230],[3300,330,230]]) + box(3300,3720,260,760,190,340) +
+    pipe([[3720,450,250],[3920,450,250]]));
+  s += cmp('uzemanyag', box(1500,2150,450,1300,200,430) + pl([[2150,1150,380],[3330,W-40,960]], 'rod-thin'));
+  s += cmp('futH',
+    pl([[XR-60,300,320],[XR-60,W-300,320]], 'rod') +
+    pl([[XR,300,290],[XR-520,330,360]], 'rod') + pl([[XR,W-300,290],[XR-520,W-330,360]], 'rod'));
+  const arm = [[XF,W-300,260],[XF-80,W-640,250],[XF+260,W-640,250],[XF,W-300,260]];
+  s += cmp('futE',
+    pl(mirrorY(arm), 'rod-thin') + pl(arm, 'rod-thin') +
+    pl([[XF+150,430,400],[XF+150,W-430,400]], 'rod') +
+    pl([[XF+150,430,400],[XF+110,290,330]], 'rod-thin') + pl([[XF+150,W-430,400],[XF+110,W-290,330]], 'rod-thin'));
+
+  // motortér
+  s += cmp('hutes', box(90,150,280,1400,330,780));
+  s += cmp('motor', box(230,700,380,1080,380,860) + box(320,620,430,1030,860,930));
+  s += cmp('valto', box(300,680,1080,1380,360,720));
+  s += cmp('elektromos', box(380,640,1130,1400,740,960));
+
+  // utastér
+  s += cmp('utaster',
+    box(2620,3060,230,W-230,430,560) + box(3000,3110,230,W-230,560,1180) +
+    box(1750,2250,250,780,430,560) + box(2170,2290,250,780,560,1230) +
+    box(1750,2250,895,1425,430,560) + box(2170,2290,895,1425,560,1230), ' soft');
+  s += cmp('utaster', box(1000,1250,160,W-160,720,980) +
+    pl([[990,420,1015],[1290,860,1225]], 'rod-thin') + pl([[990,1060,1015],[1290,1500,1225]], 'rod-thin'));
+
+  // felső héj (motorháztető, szélvédő, tető, hátsó ablak)
+  for (let i = 0; i < top.length - 1; i++) {
+    const [a, b] = [top[i], top[i+1]];
+    const cls = (i === 5 || i === 9) ? 'glass' : 'shell';
+    s += poly([[a[0],0,a[1]],[b[0],0,b[1]],[b[0],W,b[1]],[a[0],W,a[1]]], cls);
+  }
+  [2,3,4,5,6,7,8,9,10,11].forEach(i => { const [x, z] = top[i]; s += pl([[x,0,z],[x,W,z]], 'edge'); });
+
+  // lámpák
+  const hl = [[30,W-80,690],[250,W-80,790],[250,W-450,790],[30,W-450,690]];
+  const rl = [[3830,W-10,880],[3790,W-10,1100],[3700,W-10,1290],[3700,W-160,1290],[3790,W-230,1100],[3830,W-230,880]];
+  s += cmp('elektromos', poly(mirrorY(hl), 'lamp') + poly(mirrorY(rl), 'lamp') + poly(hl, 'lamp') + poly(rl, 'lamp'));
+
+  // közeli oldal: fékek, futómű, kerekek
+  s += cmp('fekE', cyl(XF, 290, 135, W-300, W-270) + box(XF+70, XF+180, W-310, W-250, 330, 470));
+  s += cmp('fekH', cyl(XR, 290, 125, W-310, W-250));
+  s += cmp('futE', pl([[XF+20,W-330,330],[XF+70,W-360,930]], 'rod') + spring(XF+50, W-345, 600, 880));
+  s += cmp('futH', pl([[XR+80,W-330,300],[XR+110,W-350,760]], 'rod') + spring(XR-200, W-360, 330, 720));
+  const wheel = x => cyl(x, 290, 290, W-235, W-60, 'tire', 'tire') + poly(ring(x, W-60, 290, 180), 'rim') + poly(ring(x, W-60, 290, 55, 16), 'f-front');
+  s += cmp('kerek', wheel(XF) + wheel(XR));
+
+  // közeli karosszériaoldal
+  s += poly(side(W), 'near');
+  s += poly([[1060,W,1010],[1600,W,1420],[3380,W,1440],[3560,W,1060]], 'glass');
+  s += pl([[2235,W,1012],[2255,W,1430]], 'pillar') + pl([[3020,W,1018],[3040,W,1440]], 'seam');
+  s += pl([[1130,W,995],[1130,W,330],[2890,W,330],[2900,W,560],[3010,W,720],[3020,W,1018]], 'seam');
+  s += pl([[2240,W,1012],[2240,W,330]], 'seam');
+  s += pl([[2060,W,860],[2160,W,860]], 'handle') + pl([[2780,W,860],[2880,W,860]], 'handle');
+  s += cmp('karosszeria', box(1150,1300,W,W+130,960,1080) + pl([[1130,W,300],[2890,W,300]], 'rod-thin'));
+  s += cmp('uzemanyag', poly(ring(3330, W, 960, 60, 24), 'f-front'));
+
+  // hívójelek: körbe rendezve, rajzi kivezető vonallal
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const rx = (maxX - minX) / 2 + 300, ry = (maxY - minY) / 2 + 240;
+  const items = GROUPS.map(g => {
+    const a = P(...g.anchor);
+    return {g, a, t: Math.atan2((a[1] - cy) / ry, (a[0] - cx) / rx)};
+  }).sort((p, q) => p.t - q.t);
+  const n = items.length, minSep = 2 * Math.PI / n * 0.9;
+  for (let it = 0; it < 400; it++) {
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n; let d = items[j].t - items[i].t; if (j === 0) d += 2 * Math.PI;
+      if (d < minSep) { const push = (minSep - d) / 2; items[i].t -= push; items[j].t += push; }
+    }
+  }
+  const sp = v => Math.sign(v) * Math.pow(Math.abs(v), 1/3);
+  let mk = '';
+  let bx0 = minX, bx1 = maxX, by0 = minY, by1 = maxY;
+  items.forEach(({g, a, t}) => {
+    const m = [cx + rx * sp(Math.cos(t)), cy + ry * sp(Math.sin(t))];
+    bx0 = Math.min(bx0, m[0]); bx1 = Math.max(bx1, m[0]); by0 = Math.min(by0, m[1]); by1 = Math.max(by1, m[1]);
+    mk += `<g class="mk" data-g="${g.id}"><line class="ld" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(m[0])}" y2="${f(m[1])}"/>` +
+      `<g class="px adot-w" data-x="${f(a[0])}" data-y="${f(a[1])}"><circle class="adot" r="2.6"/></g>` +
+      `<g class="px mbtn" data-x="${f(m[0])}" data-y="${f(m[1])}" role="button" tabindex="0" aria-label="${esc(g.n + '. ' + g.name)}">` +
+      `<circle class="mc" r="14"/><text class="mt">${g.n}</text></g></g>`;
+  });
+  const pxs = px.map(p => `<g class="px" data-x="${f(p.x)}" data-y="${f(p.y)}" data-rot="${p.rot}">${p.html}</g>`).join('');
+  const m = 170;
+  Object.assign(VB, {x: bx0 - m, y: by0 - m, w: (bx1 - bx0) + 2*m, h: (by1 - by0) + 2*m});
+  const svg = $('#dg');
+  svg.setAttribute('viewBox', `${f(VB.x)} ${f(VB.y)} ${f(VB.w)} ${f(VB.h)}`);
+  svg.innerHTML = s + pxs + mk;
+  layoutDiagram();
+  if ('ResizeObserver' in window) new ResizeObserver(layoutDiagram).observe(svg);
+  else addEventListener('resize', layoutDiagram);
+}
+function layoutDiagram() {
+  const svg = $('#dg'); const r = svg.getBoundingClientRect(); if (!r.width) return;
+  const k = Math.max(VB.w / r.width, VB.h / (r.height || r.width * VB.h / VB.w));
+  $$('.px', svg).forEach(g => g.setAttribute('transform', `translate(${g.dataset.x} ${g.dataset.y})${g.dataset.rot ? ` rotate(${g.dataset.rot})` : ''} scale(${k.toFixed(3)})`));
+}
+function paintDiagram() {
+  $$('#dg .mk').forEach(m => { const st = groupStatus(m.dataset.g); m.setAttribute('class', `mk st-${st}${S.openGroup === m.dataset.g ? ' on' : ''}`); });
+  $$('#dg .cmp').forEach(c => c.classList.toggle('on', S.openGroup === c.dataset.g));
+}
+function hilite(gid, on) {
+  $$(`#dg [data-g="${gid}"]`).forEach(el => el.classList.toggle('hl', on));
+  $$(`.grp[data-g="${gid}"]`).forEach(el => el.classList.toggle('hl', on));
+}
+
+/* ---------- Megjelenítés ---------- */
+function renderHeader() {
+  $('#odo').textContent = fmtKm(S.settings.km);
+  const p = (S.settings.plate || '').trim();
+  $('#plate').innerHTML = p ? `<span class="plate" aria-label="Rendszám"><b>H</b><span>${esc(p.toUpperCase())}</span></span>` : '';
+  const m = $('#mode');
+  const txt = {cloud:'Felhőben mentve', local:'Ebben a böngészőben', memory:'Nincs tárolás'}[store ? store.mode : ''] || 'Betöltés…';
+  m.className = 'mode ' + (store ? store.mode : ''); m.querySelector('span').textContent = txt;
+  const td = todos();
+  const nd = td.filter(t => t.type === 'doc').length, np = td.filter(t => t.type === 'plan' && t.st === 'bad').length;
+  $('#cnt-docs').hidden = !nd; $('#cnt-docs').textContent = nd;
+  $('#cnt-plan').hidden = !np; $('#cnt-plan').textContent = np;
+}
+function renderTodo() {
+  if (!S.loaded) return;
+  const td = todos();
+  $('#todo').innerHTML = td.length ? td.map(t => {
+    const chip = t.st === 'plan' ? '<span class="chip plan">Teendő</span>' : `<span class="chip ${t.st}">${t.st === 'bad' ? 'Lejárt' : 'Hamarosan'}</span>`;
+    return `<button class="todo-it" type="button" data-act="todo" data-type="${t.type}" data-key="${esc(t.key || '')}" data-id="${esc(t.id || '')}">${chip}<span class="t">${esc(t.title)}</span><span class="s">${esc(t.sub)}</span></button>`;
+  }).join('') : `<div class="empty">Nincs lejárt vagy közelgő tétel. ${S.entries.length ? '' : 'Rögzítsd az első cserét, vagy töltsd be a példaadatokat a ⚙ menüben.'}</div>`;
+}
+function renderGroups() {
+  $('#groups').innerHTML = GROUPS.map(g => {
+    const st = S.loaded ? groupStatus(g.id) : 'none';
+    return `<li><button class="grp" type="button" data-act="group" data-g="${g.id}"><span class="num ${st}">${g.n}</span><span class="n">${esc(g.name)}</span><span class="s">${S.loaded ? esc(groupSummary(g.id)) : '…'}</span><span class="chip ${st}">${ST_LABEL[st]}</span></button></li>`;
+  }).join('');
+}
+function fileThumbs(files, removable) {
+  return (files || []).map(f => {
+    const isImg = (f.type || '').startsWith('image/');
+    const rm = removable ? `<button class="rm" type="button" data-act="file-rm" data-fid="${esc(f.id)}" aria-label="${esc(f.name)} eltávolítása">×</button>` : '';
+    if (isImg) return `<span class="thumb" role="button" tabindex="0" data-act="file" data-fid="${esc(f.id)}" data-ftype="${esc(f.type)}" data-fname="${esc(f.name)}" title="${esc(f.name)}"><img alt="${esc(f.name)}" data-fsrc="${esc(f.id)}">${rm}</span>`;
+    return `<span class="thumb"><a class="thumb" style="border:0" href="#" target="_blank" rel="noopener" data-fhref="${esc(f.id)}" title="${esc(f.name)}"><span class="ft">PDF</span><span class="fn">${esc(f.name)}</span></a>${rm}</span>`;
+  }).join('');
+}
+async function hydrate(root) {
+  if (!store) return;
+  for (const img of $$('img[data-fsrc]', root)) { if (!img.src) { try { const u = await store.fileUrl({id: img.dataset.fsrc}); if (u) img.src = u; } catch (_) {} } }
+  for (const a of $$('a[data-fhref]', root)) { try { const u = await store.fileUrl({id: a.dataset.fhref}); if (u) a.href = u; } catch (_) {} }
+}
+function entryCard(e) {
+  const g = G[e.group];
+  const st = e.status === 'tervezett';
+  return `<article class="entry${st ? ' tervezett' : ''}">
+    <div class="meta"><span>${st && !e.date ? 'Tervezett' : fmtDate(e.date)}</span><span class="km">${e.km != null ? fmtKm(e.km) : ''}</span></div>
+    <div class="main">
+      <div class="ttl"><span class="kind ${esc(e.kind)}">${esc(KINDS[e.kind] || '')}</span>${esc(e.part)}${st ? ' <span class="chip plan">Tervezett</span>' : ''}${e.sample ? ' <span class="chip sample">Példa</span>' : ''}</div>
+      <div class="sub">${g ? `<button class="gchip" type="button" data-act="group" data-g="${g.id}">${g.n} · ${esc(g.name)}</button>` : ''}${e.shop ? `<span>${esc(e.shop)}</span>` : ''}</div>
+      ${e.desc ? `<p class="desc">${esc(e.desc)}</p>` : ''}
+      ${(e.files || []).length ? `<div class="files">${fileThumbs(e.files)}</div>` : ''}
+    </div>
+    <div class="end"><span class="cost">${fmtFt(e.cost)}</span><button class="btn sm" type="button" data-act="edit-entry" data-id="${esc(e.id)}">Szerkesztés</button></div>
+  </article>`;
+}
+const byDate = (a, b) => (b.date || '').localeCompare(a.date || '') || (b.km || 0) - (a.km || 0);
+function renderLog() {
+  const fg = $('#f-group'), fk = $('#f-kind');
+  if (!fg.options.length) {
+    fg.innerHTML = '<option value="">Mind</option>' + GROUPS.map(g => `<option value="${g.id}">${g.n} · ${esc(g.name)}</option>`).join('');
+    fk.innerHTML = '<option value="">Mind</option>' + Object.entries(KINDS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  }
+  fg.value = S.fGroup; fk.value = S.fKind;
+  const list = S.entries.filter(e => (!S.fGroup || e.group === S.fGroup) && (!S.fKind || e.kind === S.fKind));
+  const done = list.filter(e => e.status !== 'tervezett').sort(byDate);
+  const planned = list.filter(e => e.status === 'tervezett').sort(byDate);
+  const yr = String(new Date().getFullYear());
+  const sum = a => a.reduce((t, e) => t + (e.cost || 0), 0);
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="eyebrow">Összes költség</div><div class="v">${NF.format(sum(done))} Ft</div></div>
+    <div class="stat"><div class="eyebrow">Idén (${yr})</div><div class="v">${NF.format(sum(done.filter(e => (e.date || '').startsWith(yr))))} Ft</div></div>
+    <div class="stat"><div class="eyebrow">Bejegyzések</div><div class="v">${done.length}</div></div>
+    <div class="stat"><div class="eyebrow">Tervezett</div><div class="v">${planned.length}</div></div>`;
+  let h = '';
+  if (planned.length) h += `<div class="year">TERVEZETT</div><div class="entries">${planned.map(entryCard).join('')}</div>`;
+  let cur = null, buf = [];
+  const flush = () => { if (buf.length) h += `<div class="year">${cur}</div><div class="entries">${buf.join('')}</div>`; buf = []; };
+  done.forEach(e => { const y = (e.date || '').slice(0, 4) || '—'; if (y !== cur) { flush(); cur = y; } buf.push(entryCard(e)); });
+  flush();
+  if (!h) h = `<div class="sheet empty" style="border-top:1px solid var(--line)">${S.entries.length ? 'Nincs a szűrésnek megfelelő bejegyzés.' : 'Még nincs bejegyzés. Az „Új bejegyzés” gombbal rögzítheted az első cserét vagy javítást.'}</div>`;
+  $('#log').innerHTML = `<div style="display:grid;gap:14px">${h}</div>`;
+  hydrate($('#log'));
+}
+function renderDocs() {
+  const docs = S.docs.slice().sort((a, b) => (a.to || '9999').localeCompare(b.to || '9999'));
+  let h = docs.map(d => {
+    const s = docStatus(d);
+    return `<article class="doc ${s.st}">
+      <div class="row"><span class="eyebrow">${esc(DT[d.type]?.name || 'Egyéb')}</span><span class="chip ${s.st}">${esc(s.text)}</span></div>
+      <h3>${esc(d.title || DT[d.type]?.name || 'Papír')}${d.sample ? ' <span class="chip sample">Példa</span>' : ''}</h3>
+      ${d.number ? `<div class="mono">${esc(d.number)}</div>` : ''}
+      ${(d.from || d.to) ? `<div class="valid">${fmtDate(d.from)} – ${fmtDate(d.to)}</div>` : ''}
+      ${d.note ? `<div class="hint">${esc(d.note)}</div>` : ''}
+      ${(d.files || []).length ? `<div class="files">${fileThumbs(d.files)}</div>` : ''}
+      <div class="row"><span class="mono">${fmtFt(d.cost)}</span><button class="btn sm" type="button" data-act="edit-doc" data-id="${esc(d.id)}">Szerkesztés</button></div>
+    </article>`;
+  }).join('');
+  const have = new Set(S.docs.map(d => d.type));
+  h += ESSENTIAL.filter(t => !have.has(t)).map(t => `<button class="doc add" type="button" data-act="new-doc" data-type="${t}"><span class="eyebrow">Hiányzik</span><b>+ ${esc(DT[t].name)}</b><span>Rögzítsd a lejáratot és csatold a fotót.</span></button>`).join('');
+  $('#docs').innerHTML = h;
+  hydrate($('#docs'));
+}
+function renderPlan() {
+  const noKm = S.settings.km == null;
+  let h = `<div class="prow head"><span>Tétel</span><span>Intervallum</span><span>Utoljára</span><span>Esedékes</span><span></span></div>`;
+  h += PLAN.map(p0 => {
+    const s = planStatus(p0.key), p = s.p, g = G[p.group];
+    const due = s.done ? [s.dueDate ? fmtDate(s.dueDate) : '', s.dueKm ? fmtKm(s.dueKm) : ''].filter(Boolean).join(' vagy ') : '—';
+    return `<div class="prow">
+      <div class="nm"><span class="num ${s.st}">${g.n}</span><div><b>${esc(p.label)}</b><small>${esc(g.name)}</small></div></div>
+      <div class="iv"><label>km<input type="number" min="0" step="1000" inputmode="numeric" data-plan="${p.key}" data-f="km" value="${p.km ?? ''}" aria-label="${esc(p.label)} km-intervallum"></label><label>hónap<input type="number" min="0" step="1" inputmode="numeric" data-plan="${p.key}" data-f="months" value="${p.months ?? ''}" aria-label="${esc(p.label)} hónap-intervallum"></label></div>
+      <div class="lst"><span class="lbl">Utoljára</span>${s.done ? `${fmtDate(s.done.date)}${s.done.km != null ? '<br>' + fmtKm(s.done.km) : ''}` : '—'}</div>
+      <div class="due"><span class="lbl">Esedékes</span>${due}${s.done && dueText(s) ? `<small>${dueText(s)}</small>` : ''}</div>
+      <div class="act"><span class="chip ${s.st}">${ST_LABEL[s.st]}</span><button class="btn sm" type="button" data-act="plan-log" data-key="${p.key}">Rögzítés</button></div>
+    </div>`;
+  }).join('');
+  if (noKm) h = `<div class="empty" style="border-top:0;border-bottom:1px solid var(--line)">Add meg a km-óra állást (fent jobbra), hogy a kilométer alapú tételeket is számolni tudja.</div>` + h;
+  $('#plan').innerHTML = h;
+}
+function renderGroupDialog() {
+  const g = G[S.openGroup]; if (!g) return;
+  const plans = PLAN.filter(p => p.group === g.id).map(p => planStatus(p.key));
+  const ents = S.entries.filter(e => e.group === g.id).sort((a, b) => (a.status === 'tervezett' ? -1 : 0) - (b.status === 'tervezett' ? -1 : 0) || byDate(a, b));
+  $('#g-body').innerHTML = `
+    <div class="dlg-h"><div><div class="eyebrow">${g.n}. csoport</div><h2 id="g-title">${esc(g.name)}</h2></div><button class="x" type="button" data-act="close" aria-label="Bezárás">×</button></div>
+    <div class="dlg-b">
+      <p class="hint" style="font-size:14.5px">${esc(g.note)}</p>
+      ${plans.length ? `<div><h3>Karbantartás</h3><div class="gplan">${plans.map(s => `<div><b>${esc(s.p.label)}</b><small>${s.done ? 'Utoljára ' + fmtDate(s.done.date) + (s.done.km != null ? ' · ' + fmtKm(s.done.km) : '') + (dueText(s) ? ' · ' + dueText(s) : '') : 'Nincs még bejegyzés'}</small><span class="r"><span class="chip ${s.st}">${ST_LABEL[s.st]}</span><button class="btn sm" type="button" data-act="plan-log" data-key="${s.p.key}">Rögzítés</button></span></div>`).join('')}</div></div>` : ''}
+      <div><h3>Alkatrészek – koppints a rögzítéshez</h3><div class="chips">${g.parts.map(p => `<button class="pchip" type="button" data-act="new-entry" data-g="${g.id}" data-part="${esc(p.name)}">${esc(p.name)}</button>`).join('')}</div></div>
+      <div><h3>Bejegyzések (${ents.length})</h3>${ents.length ? `<div class="entries">${ents.map(entryCard).join('')}</div>` : '<p class="hint">Ehhez a csoporthoz még nincs bejegyzés.</p>'}</div>
+    </div>
+    <div class="dlg-f"><span class="sp"></span><button class="btn primary" type="button" data-act="new-entry" data-g="${g.id}">+ Új bejegyzés</button></div>`;
+  hydrate($('#g-body'));
+}
+function renderAll() {
+  renderHeader(); renderTodo(); renderGroups(); paintDiagram();
+  renderLog(); renderDocs(); renderPlan();
+  if (S.openGroup && $('#dlg-group').open) renderGroupDialog();
+}
+
+/* ---------- Fülek, párbeszédek ---------- */
+function setTab(t) {
+  S.tab = t;
+  $$('.tab-btn').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  $$('section.tab').forEach(s => { s.hidden = s.id !== 'tab-' + t; });
+  try { localStorage.setItem('jazz-tab', t); } catch (_) {}
+  if (t === 'auto') layoutDiagram();
+}
+function openDlg(id) { const d = $(id); if (!d.open) d.showModal(); }
+function openGroup(gid) {
+  S.openGroup = gid; renderGroupDialog(); paintDiagram(); openDlg('#dlg-group');
+}
+$('#dlg-group').addEventListener('close', () => { S.openGroup = null; paintDiagram(); });
+$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+function armDelete(btn, fn) {
+  if (btn.classList.contains('armed')) { btn.classList.remove('armed'); btn.textContent = 'Törlés'; fn(); return; }
+  btn.classList.add('armed'); btn.textContent = 'Biztosan törlöd? Kattints újra';
+  setTimeout(() => { btn.classList.remove('armed'); btn.textContent = 'Törlés'; }, 4000);
+}
+
+async function prepFile(file) {
+  const isImg = (file.type || '').startsWith('image/') || /\.(heic|heif)$/i.test(file.name);
+  if (isImg && (file.size > 1.5e6 || !OK_TYPES.includes(file.type))) {
+    try {
+      const bmp = await createImageBitmap(file);
+      const sc = Math.min(1, 2200 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas'); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+      const x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0, c.width, c.height);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+      if (blob) return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'});
+    } catch (_) {}
+  }
+  if (!OK_TYPES.includes(file.type)) throw new Error(`A(z) „${file.name}” formátuma nem támogatott. JPG, PNG vagy PDF lehet.`);
+  return file;
+}
+
+/* Csatolmánykezelés a két űrlaphoz */
+function fileBox(listSel, inputSel) {
+  const F = {keep:[], pending:[], removed:[]};
+  const draw = () => {
+    const pend = F.pending.map((p, i) => `<span class="thumb" title="${esc(p.file.name)}">${p.url ? `<img alt="" src="${p.url}">` : `<span class="ft">PDF</span>`}<span class="fn">${esc(p.file.name)}</span><button class="rm" type="button" data-act="pend-rm" data-i="${i}" aria-label="Eltávolítás">×</button></span>`).join('');
+    $(listSel).innerHTML = fileThumbs(F.keep, true) + pend;
+    hydrate($(listSel));
+  };
+  $(inputSel).addEventListener('change', async ev => {
+    for (const f0 of [...ev.target.files]) {
+      try { const f = await prepFile(f0); F.pending.push({file:f, url: f.type.startsWith('image/') ? URL.createObjectURL(f) : ''}); }
+      catch (e) { toast(errMsg(e)); }
+    }
+    ev.target.value = ''; draw();
+  });
+  $(listSel).addEventListener('click', ev => {
+    const r = ev.target.closest('[data-act="file-rm"]'); const p = ev.target.closest('[data-act="pend-rm"]');
+    if (r) { ev.preventDefault(); ev.stopPropagation(); const i = F.keep.findIndex(f => f.id === r.dataset.fid); if (i >= 0) F.removed.push(...F.keep.splice(i, 1)); draw(); }
+    if (p) { ev.preventDefault(); ev.stopPropagation(); F.pending.splice(+p.dataset.i, 1); draw(); }
+  });
+  return {
+    reset(files) { F.keep = (files || []).slice(); F.pending = []; F.removed = []; draw(); },
+    async commit() {
+      const up = [];
+      for (const p of F.pending) up.push(await store.uploadFile(p.file));
+      return F.keep.concat(up);
+    },
+    async cleanup() { for (const f of F.removed) { try { await store.deleteFile(f); } catch (_) {} } },
+  };
+}
+const EF = fileBox('#e-files', '#e-file');
+const DF = fileBox('#d-files', '#d-file');
+
+/* Bejegyzés űrlap */
+let editE = null;
+function fillParts(gid, part) {
+  const g = G[gid]; const sel = $('#e-part');
+  sel.innerHTML = g.parts.map(p => `<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('') + '<option value="__custom">Egyéb (saját megnevezés)…</option>';
+  const known = g.parts.some(p => p.name === part);
+  sel.value = part ? (known ? part : '__custom') : g.parts[0].name;
+  $('#e-custom').value = part && !known ? part : '';
+  $('#e-custom-w').hidden = sel.value !== '__custom';
+}
+$('#e-group').innerHTML = GROUPS.map(g => `<option value="${g.id}">${g.n} · ${esc(g.name)}</option>`).join('');
+$('#e-group').addEventListener('change', e => fillParts(e.target.value, ''));
+$('#e-part').addEventListener('change', e => { $('#e-custom-w').hidden = e.target.value !== '__custom'; if (e.target.value === '__custom') $('#e-custom').focus(); });
+
+function openEntry(e, prefill = {}) {
+  editE = e ? clean(e) : {status:'kesz', kind:'csere', date: todayISO(), km: S.settings.km ?? null, group:'motor', part:'', files:[], ...prefill};
+  $('#e-title').textContent = e ? 'Bejegyzés szerkesztése' : 'Új bejegyzés';
+  $(`#es-${editE.status === 'tervezett' ? 'terv' : 'kesz'}`).checked = true;
+  $(`#ek-${editE.kind || 'csere'}`).checked = true;
+  $('#e-group').value = editE.group; fillParts(editE.group, editE.part);
+  $('#e-date').value = editE.date || ''; $('#e-km').value = editE.km ?? '';
+  $('#e-cost').value = editE.cost ?? ''; $('#e-shop').value = editE.shop || ''; $('#e-desc').value = editE.desc || '';
+  $('#e-err').hidden = true; $('#e-del').hidden = !e; $('#e-del').classList.remove('armed'); $('#e-del').textContent = 'Törlés';
+  $('#e-files-w').hidden = !store.canUpload && !(editE.files || []).length;
+  EF.reset(editE.files);
+  openDlg('#dlg-entry');
+}
+$('#f-entry').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const status = $('input[name=status]:checked').value, kind = $('input[name=kind]:checked').value;
+  const group = $('#e-group').value; const sel = $('#e-part').value;
+  const part = sel === '__custom' ? $('#e-custom').value.trim() : sel;
+  const date = $('#e-date').value;
+  const err = m => { $('#e-err').textContent = m; $('#e-err').hidden = false; };
+  if (!part) return err('Add meg, melyik alkatrészről vagy munkáról van szó.');
+  if (status === 'kesz' && !date) return err('Az elvégzett munkához kell dátum.');
+  const planKey = sel === '__custom' ? null : (G[group].parts.find(p => p.name === part) || {}).plan || null;
+  const btn = $('#e-save'); btn.disabled = true; btn.textContent = 'Mentés…';
+  try {
+    const files = await EF.commit();
+    const obj = {...editE, status, kind, group, part, plan: planKey, date: date || null, km: num($('#e-km').value),
+      cost: num($('#e-cost').value), shop: $('#e-shop').value.trim(), desc: $('#e-desc').value.trim(), files, updated: new Date().toISOString()};
+    if (!obj.created) obj.created = obj.updated;
+    await store.saveEntry(obj);
+    await EF.cleanup();
+    if (status === 'kesz' && obj.km != null && (S.settings.km == null || obj.km > S.settings.km)) {
+      await store.saveSettings({...S.settings, km: obj.km, kmDate: obj.date || todayISO()});
+    }
+    $('#dlg-entry').close(); toast('Bejegyzés mentve.');
+  } catch (e) { err(errMsg(e)); }
+  finally { btn.disabled = false; btn.textContent = 'Mentés'; }
+});
+$('#e-del').addEventListener('click', ev => armDelete(ev.currentTarget, async () => {
+  try { await store.deleteEntry(editE.id); for (const f of editE.files || []) { try { await store.deleteFile(f); } catch (_) {} } $('#dlg-entry').close(); toast('Bejegyzés törölve.'); }
+  catch (e) { toast(errMsg(e)); }
+}));
+
+/* Papír űrlap */
+let editD = null;
+$('#d-type').innerHTML = DOC_TYPES.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+function openDoc(d, type) {
+  editD = d ? clean(d) : {type: type || 'kgfb', files:[]};
+  $('#d-title').textContent = d ? 'Papír szerkesztése' : 'Új papír';
+  $('#d-type').value = editD.type; $('#d-name').value = editD.title || ''; $('#d-number').value = editD.number || '';
+  $('#d-from').value = editD.from || ''; $('#d-to').value = editD.to || ''; $('#d-cost').value = editD.cost ?? ''; $('#d-note').value = editD.note || '';
+  $('#d-err').hidden = true; $('#d-del').hidden = !d; $('#d-del').classList.remove('armed'); $('#d-del').textContent = 'Törlés';
+  $('#d-files-w').hidden = !store.canUpload && !(editD.files || []).length;
+  DF.reset(editD.files);
+  openDlg('#dlg-doc');
+}
+$('#f-doc').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const from = $('#d-from').value, to = $('#d-to').value;
+  if (from && to && to < from) { $('#d-err').textContent = 'A lejárat nem lehet a kezdő dátum előtt.'; $('#d-err').hidden = false; return; }
+  const btn = $('#d-save'); btn.disabled = true; btn.textContent = 'Mentés…';
+  try {
+    const files = await DF.commit();
+    await store.saveDoc({...editD, type: $('#d-type').value, title: $('#d-name').value.trim(), number: $('#d-number').value.trim(),
+      from: from || null, to: to || null, cost: num($('#d-cost').value), note: $('#d-note').value.trim(), files, updated: new Date().toISOString()});
+    await DF.cleanup();
+    $('#dlg-doc').close(); toast('Papír mentve.');
+  } catch (e) { $('#d-err').textContent = errMsg(e); $('#d-err').hidden = false; }
+  finally { btn.disabled = false; btn.textContent = 'Mentés'; }
+});
+$('#d-del').addEventListener('click', ev => armDelete(ev.currentTarget, async () => {
+  try { await store.deleteDoc(editD.id); for (const f of editD.files || []) { try { await store.deleteFile(f); } catch (_) {} } $('#dlg-doc').close(); toast('Papír törölve.'); }
+  catch (e) { toast(errMsg(e)); }
+}));
+
+/* Km és beállítások */
+$('#f-km').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const km = num($('#k-km').value);
+  try { await store.saveSettings({...S.settings, km, kmDate: todayISO()}); $('#dlg-km').close(); toast('Km-óra állás mentve.'); }
+  catch (e) { toast(errMsg(e)); }
+});
+$('#f-settings').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  try { await store.saveSettings({...S.settings, plate: $('#s-plate').value.trim(), vin: $('#s-vin').value.trim().toUpperCase(), note: $('#s-note').value.trim()}); toast('Autó adatai mentve.'); }
+  catch (e) { toast(errMsg(e)); }
+});
+function openSettings() {
+  $('#s-plate').value = S.settings.plate || ''; $('#s-vin').value = S.settings.vin || ''; $('#s-note').value = S.settings.note || '';
+  $('#s-mode').textContent = {
+    cloud: 'Az adatok és a csatolmányok ennek a Claude-oldalnak a saját adatbázisában vannak. Minden eszközről elérheted, ahol be vagy jelentkezve.',
+    local: 'Az adatok csak ebben a böngészőben, ezen az eszközön vannak. Készíts időnként mentést fájlba, mert a böngészőadatok törlésével elvesznek.',
+    memory: 'Ez a böngésző nem engedi az adattárolást, ezért frissítéskor minden elvész. Nyisd meg normál (nem privát) ablakban.',
+  }[store.mode];
+  openDlg('#dlg-settings');
+}
+
+/* Mentés és visszatöltés */
+const blobToDataUrl = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(b); });
+async function exportAll() {
+  toast('Mentés készítése…');
+  const files = {};
+  for (const f of [...S.entries, ...S.docs].flatMap(x => x.files || [])) {
+    try { const b = await store.fileBlob(f); if (b) files[f.id] = {name:f.name, type:f.type, data: await blobToDataUrl(b)}; } catch (_) {}
+  }
+  const out = {app:'jazz-szervizkonyv', version:1, exported:new Date().toISOString(), settings:S.settings, entries:S.entries, docs:S.docs, files};
+  try { await store.download(`jazz-szervizkonyv-${todayISO()}.json`, JSON.stringify(out)); toast('Mentés kész.'); }
+  catch (e) { toast(errMsg(e)); }
+}
+$('#s-import').addEventListener('change', async ev => {
+  const file = ev.target.files[0]; ev.target.value = ''; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== 'jazz-szervizkonyv') throw new Error('Ez nem a Jazz Szervizkönyv mentése.');
+    toast('Visszatöltés…');
+    const map = {};
+    for (const [oldId, f] of Object.entries(data.files || {})) {
+      try { const b = await (await fetch(f.data)).blob(); const ref = await store.uploadFile(new File([b], f.name, {type:f.type})); map[oldId] = ref; } catch (_) {}
+    }
+    const fix = x => ({...x, files: (x.files || []).map(f => map[f.id] || f)});
+    for (const e of data.entries || []) await store.saveEntry(fix(e));
+    for (const d of data.docs || []) await store.saveDoc(fix(d));
+    if (data.settings) await store.saveSettings({...S.settings, ...data.settings});
+    toast(`Visszatöltve: ${(data.entries || []).length} bejegyzés, ${(data.docs || []).length} papír.`);
+  } catch (e) { toast(errMsg(e)); }
+});
+
+/* Példaadatok */
+async function loadSamples() {
+  const t = todayISO(), m = n => addMonths(t, -n), km = S.settings.km ?? 186400;
+  const E = [
+    {date:m(1), km:km-1500, group:'motor', part:'Motorolaj + olajszűrő', plan:'olaj', kind:'csere', cost:18500, shop:'Minta Autószerviz', desc:'Olaj és szűrő csere a szervizkönyv szerinti specifikációval.'},
+    {date:m(6), km:km-5200, group:'kerek', part:'Gumicsere (nyári/téli)', plan:'gumi', kind:'csere', cost:8000, shop:'Minta Gumiszerviz', desc:'Nyári gumik fel, téli gumik tárolásra leadva.'},
+    {date:m(11), km:km-8100, group:'fekE', part:'Első fékbetétek és tárcsák', plan:'fekE', kind:'csere', cost:24000, shop:'Minta Autószerviz', desc:'Betétek cseréje, a tárcsák még jók.'},
+    {date:m(8), km:km-6000, group:'elektromos', part:'Akkumulátor', plan:'akku', kind:'csere', cost:32000, desc:'Új akkumulátor, 2 év garancia.'},
+    {date:m(30), km:km-24000, group:'hutes', part:'Hűtőfolyadék', plan:'hutofoly', kind:'csere', cost:15000, shop:'Minta Autószerviz'},
+    {date:m(26), km:km-26000, group:'utaster', part:'Pollenszűrő', plan:'pollen', kind:'csere', cost:6500},
+    {date:addDays(t, 12), km:null, group:'futE', part:'Első lengéscsillapítók', plan:null, kind:'javitas', status:'tervezett', desc:'Kopog az első futómű úthibákon. Megnézetni a következő szerviznél.'},
+  ];
+  const y = new Date().getFullYear();
+  const D = [
+    {type:'kgfb', title:'Minta Biztosító', number:'KGFB-000000', from:`${y}-01-01`, to:`${y}-12-31`, cost:38000},
+    {type:'muszaki', title:'Műszaki vizsga', from:addDays(t, -2*365 + 25), to:addDays(t, 25)},
+    {type:'matrica', title:'Éves vármegyei matrica', number:'Pest', from:addDays(t, -370), to:addDays(t, -5), cost:5450},
+  ];
+  try {
+    if (S.settings.km == null) await store.saveSettings({...S.settings, km, kmDate:t});
+    for (const e of E) await store.saveEntry({status:'kesz', files:[], ...e, sample:true, created:new Date().toISOString()});
+    for (const d of D) await store.saveDoc({files:[], ...d, sample:true});
+    toast('Példaadatok betöltve.');
+  } catch (e) { toast(errMsg(e)); }
+}
+async function clearSamples() {
+  try {
+    for (const e of S.entries.filter(e => e.sample)) await store.deleteEntry(e.id);
+    for (const d of S.docs.filter(d => d.sample)) await store.deleteDoc(d.id);
+    toast('Példaadatok törölve.');
+  } catch (e) { toast(errMsg(e)); }
+}
+
+/* ---------- Események ---------- */
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act;
+  if (a === 'tab') return setTab(t.dataset.tab);
+  if (a === 'close') { t.closest('dialog').close(); return; }
+  if (!store) { toast('Még töltődnek az adatok.'); return; }
+  if (a === 'group') { if ($('#dlg-entry').open) return; openGroup(t.dataset.g); }
+  else if (a === 'new-entry') openEntry(null, t.dataset.g ? {group:t.dataset.g, part:t.dataset.part || '', kind: t.dataset.part && /ellenőrzés|beállítás/i.test(t.dataset.part) ? 'ellenorzes' : 'csere'} : {});
+  else if (a === 'edit-entry') { const e = S.entries.find(x => x.id === t.dataset.id); if (e) openEntry(e); }
+  else if (a === 'new-doc') openDoc(null, t.dataset.type);
+  else if (a === 'edit-doc') { const d = S.docs.find(x => x.id === t.dataset.id); if (d) openDoc(d); }
+  else if (a === 'plan-log') { const p = planOf(t.dataset.key); openEntry(null, {group:p.group, part:p.label, kind:p.kind}); }
+  else if (a === 'todo') {
+    if (t.dataset.type === 'plan') { const p = planOf(t.dataset.key); openEntry(null, {group:p.group, part:p.label, kind:p.kind}); }
+    else if (t.dataset.type === 'doc') { const d = S.docs.find(x => x.id === t.dataset.id); if (d) openDoc(d); }
+    else { const e = S.entries.find(x => x.id === t.dataset.id); if (e) openEntry(e); }
+  }
+  else if (a === 'km') { $('#k-km').value = S.settings.km ?? ''; $('#k-hint').textContent = S.settings.kmDate ? `Utoljára frissítve: ${fmtDate(S.settings.kmDate)}` : 'A kilométer alapú esedékességek ebből számolódnak.'; openDlg('#dlg-km'); }
+  else if (a === 'settings') openSettings();
+  else if (a === 'export') exportAll();
+  else if (a === 'sample-load') loadSamples();
+  else if (a === 'sample-clear') clearSamples();
+  else if (a === 'plan-reset') { store.saveSettings({...S.settings, plan:{}}).then(() => toast('Alapértékek visszaállítva.'), e => toast(errMsg(e))); }
+  else if (a === 'file') {
+    store.fileUrl({id:t.dataset.fid}).then(u => { $('#i-img').src = u; $('#i-img').alt = t.dataset.fname; $('#i-title').textContent = t.dataset.fname; $('#i-open').href = u; openDlg('#dlg-img'); });
+  }
+});
+document.addEventListener('keydown', ev => {
+  if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('[role="button"][data-act], #dg .mbtn')) {
+    ev.preventDefault();
+    if (ev.target.matches('#dg .mbtn')) openGroup(ev.target.closest('.mk').dataset.g); else ev.target.click();
+  }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.id === 'f-group') { S.fGroup = t.value; renderLog(); }
+  else if (t.id === 'f-kind') { S.fKind = t.value; renderLog(); }
+  else if (t.dataset.plan && store) {
+    const plan = {...(S.settings.plan || {})}; const cur = {...(plan[t.dataset.plan] || {})};
+    cur[t.dataset.f] = t.value === '' ? null : num(t.value); plan[t.dataset.plan] = cur;
+    store.saveSettings({...S.settings, plan}).catch(e => toast(errMsg(e)));
+  }
+});
+const dg = $('#dg');
+dg.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-g]'); if (!el || !store) return;
+  openGroup(el.dataset.g);
+});
+dg.addEventListener('pointerover', ev => { const el = ev.target.closest('[data-g]'); if (el) hilite(el.dataset.g, true); });
+dg.addEventListener('pointerout', ev => { const el = ev.target.closest('[data-g]'); if (el) hilite(el.dataset.g, false); });
+$('#groups').addEventListener('pointerover', ev => { const el = ev.target.closest('.grp'); if (el) hilite(el.dataset.g, true); });
+$('#groups').addEventListener('pointerout', ev => { const el = ev.target.closest('.grp'); if (el) hilite(el.dataset.g, false); });
+
+/* ---------- Indítás ---------- */
+buildDiagram();
+renderGroups();
+try { const t = localStorage.getItem('jazz-tab'); if (t && $('#tab-' + t)) setTab(t); } catch (_) {}
+initStore().then(st => {
+  store = st;
+  store.subscribe(data => {
+    S.entries = data.entries || []; S.docs = data.docs || []; S.settings = data.settings || {}; S.loaded = true;
+    renderAll();
+  });
+}).catch(e => toast(errMsg(e)));
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && window.self === window.top && !window.claude) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+})();
+</script>
+<!-- APP END -->
+</body>
+</html>
