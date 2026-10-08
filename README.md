@@ -4,7 +4,7 @@ Karbantartási napló egy 2004-es Honda Jazz 1.2 i-DSI-hez (GD1). Prototípus.
 
 ## Mit tud
 
-- **Axonometrikus ábra:** a 13 alkatrészcsoport számozva. A szám színe mutatja az állapotot: rendben, hamarosan, lejárt, nincs adat. A számra vagy magára az alkatrészre koppintva megnyílik a csoport.
+- **Az autó rajza:** a saját fotóról körberajzolva (`tools/trace.py`), a 13 alkatrészcsoport számozva. A szám színe mutatja az állapotot: rendben, hamarosan, lejárt, nincs adat. A számra vagy magára az alkatrészre koppintva megnyílik a csoport.
 - **Napló:** cserék, javítások, ellenőrzések, tervezett teendők. Mindegyikhez tartozhat dátum, km-állás, költség, szerviz, leírás és csatolt számlafotó vagy PDF.
 - **Papírok:** KGFB, CASCO, műszaki vizsga, autópálya-matrica, forgalmi, törzskönyv stb., lejárati figyelmeztetéssel.
 - **Szervizterv:** km- és időalapú intervallumok, átírhatók. A kiinduló értékeket egyeztetni kell a szervizkönyvvel.
